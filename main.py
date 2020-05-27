@@ -23,6 +23,7 @@ def ROI_sampling(mask: sitk.Image) -> sitk.Image:
     discretized_mask = sitk.Cast(mask, sitk.sitkInt32)
     output = sitk.Image(mask.GetSize(), sitk.sitkInt32)
 
+
     # For each slice in the mask we try to find a suitable region
     for z in np.arange(discretized_mask.GetDepth()):
         # Extract a slice from the mask
@@ -30,6 +31,7 @@ def ROI_sampling(mask: sitk.Image) -> sitk.Image:
         img_arr = sitk.GetArrayFromImage(image)
         # Erode the mask using a 20 x 20 box
         img_arr = ndimage.binary_erosion(img_arr, structure=np.ones((20, 20))).astype(img_arr.dtype)
+        out_array = sitk.GetArrayFromImage(output[:, :, z.item()])
 
         # Pick a random location within the eroded mask, this will be the new center of our window
         indices = np.nonzero(img_arr)
@@ -38,9 +40,10 @@ def ROI_sampling(mask: sitk.Image) -> sitk.Image:
             random_index = randint(0, len(indices[0])-1)
             center = indices[0][random_index], indices[1][random_index]
             # Create a new image of the intersect of the mask with the selected window
+            out_array[center[0]-10:center[0]+10,center[1]-10:center[1]+10] = img_arr[center[0]-10:center[0]+10,center[1]-10:center[1]+10]
 
         # Paste the new image into the output image
-        img_vol = sitk.JoinSeries(sitk.GetImageFromArray(img_arr))
+        img_vol = sitk.JoinSeries(sitk.GetImageFromArray(out_array))
         output = sitk.Paste(output, img_vol, img_vol.GetSize(), destinationIndex=[0, 0, z.item()])
     return output
 
