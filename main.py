@@ -11,8 +11,7 @@ from radiomics import generalinfo
 import SimpleITK as sitk
 import os
 
-
-# import utilities
+import utilities
 
 
 def ROI_sampling(mask: sitk.Image) -> sitk.Image:
@@ -47,7 +46,6 @@ def ROI_sampling(mask: sitk.Image) -> sitk.Image:
             assert np.count_nonzero(out_arr[c_x-10:c_x+10, c_y-10:c_y+10]) == 400
         # Paste the new image into the output image
         img_vol = sitk.JoinSeries(sitk.GetImageFromArray(out_arr))
-        print(img_vol.GetOrigin())
         output = sitk.Paste(output, img_vol, img_vol.GetSize(), destinationIndex=[0, 0, z.item()])
     output.CopyInformation(mask)
     return output
@@ -58,24 +56,62 @@ def extract_features(files, extractor):
     This function extracts features from a list of file and masks as specified by the names parameter
     returns a feature vector
     """
-    featureVector = list()
+    feature_vector = list()
     print("Calculating features")
     for (image, mask) in files:
-        featureVector.append(extractor.execute(image, mask))
-    return featureVector
+        feature_vector.append(extractor.execute(image, mask))
+    return feature_vector
 
 
-def print_features(features_list):
-    for features in features_list:
-        for featureName in features.keys():
-            print("Computed %s: %s" % (featureName, features[featureName]))
 
+if __name__ == '__main__':
 
-# Currently uses hardcoded paths
-imageName = os.path.realpath('data/tr_im.nii')
-maskName = os.path.realpath('data/tr_mask.nii')
+    # Currently uses hardcoded paths
+    imageName = os.path.realpath('data/tr_im.nii')
+    maskName = os.path.realpath('sampled.nii')
 
-image = sitk.ReadImage(imageName)
-mask = sitk.ReadImage(maskName)
+    image = sitk.ReadImage(imageName)
+    mask = sitk.ReadImage(maskName)
 
-sitk.WriteImage(ROI_sampling(mask), 'sampled.nii')
+    # sitk.WriteImage(ROI_sampling(mask), 'sampled.nii')
+
+    # get pyradiomics logger, loglevel DEBUG
+    logger = radiomics.logger
+    logger.setLevel(logging.DEBUG)
+
+    # Set up the handler to write out all log entries to a file
+    handler = logging.FileHandler(filename='testLog.txt', mode='w')
+    formatter = logging.Formatter("%(levelname)s:%(name)s: %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    # Define settings for signature calculation
+    # These are currently set equal to the respective default values
+    settings = {'binWidth': 25, 'resampledPixelSpacing': None, 'interpolator': sitk.sitkBSpline, 'normalize': True, 'removeOutliers': True}
+    print(settings)
+
+    # Initialize feature extractor
+    f_extractor = featureextractor.RadiomicsFeatureExtractor(**settings)
+
+    # Disable all classes except firstorder
+    f_extractor.disableAllFeatures()
+
+    # Only enable mean and skewness in firstorder
+    f_extractor.enableFeaturesByName(firstorder=['Mean', 'Skewness'])
+
+    print("Pixel Type    {}".format(image.GetPixelID()))
+    print("Size          {}".format(image.GetSize()))
+    print("Origin        {}".format(image.GetOrigin()))
+    print("Spacing       {}".format(image.GetSpacing()))
+    print("Direction     {}".format(image.GetDirection()))
+
+    info = generalinfo.GeneralInfo()
+    print(info.getGeneralInfo())
+
+    files = list()
+    files.append((image, mask))
+    features = extract_features(files, f_extractor)
+    utilities.print_features(features)
+
+    print()
+
