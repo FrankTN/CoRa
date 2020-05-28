@@ -1,3 +1,4 @@
+import csv
 import logging
 from random import randint
 
@@ -13,6 +14,9 @@ import os
 
 import utilities
 
+#
+HI_VERBOSITY = 10
+LO_VERBOSITY = 40
 
 def ROI_sampling(mask: sitk.Image) -> sitk.Image:
     """
@@ -58,6 +62,7 @@ def extract_features(files, extractor):
     """
     feature_vector = list()
     print("Calculating features")
+    # TODO Efficiently extract for all labels in mask
     for (image, mask) in files:
         feature_vector.append(extractor.execute(image, mask))
     return feature_vector
@@ -69,6 +74,7 @@ if __name__ == '__main__':
     # Currently uses hardcoded paths
     imageName = os.path.realpath('data/tr_im.nii')
     maskName = os.path.realpath('sampled.nii')
+    paramName = os.path.realpath('params.yaml')
 
     image = sitk.ReadImage(imageName)
     mask = sitk.ReadImage(maskName)
@@ -85,19 +91,9 @@ if __name__ == '__main__':
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    # Define settings for signature calculation
-    # These are currently set equal to the respective default values
-    settings = {'binWidth': 25, 'resampledPixelSpacing': None, 'interpolator': sitk.sitkBSpline, 'normalize': True, 'removeOutliers': True}
-    print(settings)
-
     # Initialize feature extractor
-    f_extractor = featureextractor.RadiomicsFeatureExtractor(**settings)
-
-    # Disable all classes except firstorder
-    f_extractor.disableAllFeatures()
-
-    # Only enable mean and skewness in firstorder
-    f_extractor.enableFeaturesByName(firstorder=['Mean', 'Skewness'])
+    f_extractor = featureextractor.RadiomicsFeatureExtractor(paramName)
+    radiomics.setVerbosity(HI_VERBOSITY)
 
     print("Pixel Type    {}".format(image.GetPixelID()))
     print("Size          {}".format(image.GetSize()))
@@ -113,5 +109,15 @@ if __name__ == '__main__':
     features = extract_features(files, f_extractor)
     utilities.print_features(features)
 
-    print()
+    # Store the calculated features in a csv file
+    csv_file = "results.csv"
+    csv_columns = ['Name', 'Value']
 
+    try:
+        with open(csv_file, 'w') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(csv_columns)
+            for key, value in features[0].items():
+                writer.writerow([key,value])
+    except IOError:
+        print("I/O error")

@@ -1,0 +1,24 @@
+imageType:
+    Original: {}
+    #LoG:
+     #sigma: [1.0, 1.0]
+    #Wavelet:
+        #binWidth: 10
+
+# Currently enabling all features
+featureClass:
+    #firstorder:
+    shape:
+    #glcm:
+    #glrlm:
+    #glszm:
+    #gldm:
+    #ngtdm:
+
+setting:
+    binWidth: 25
+    resampledPixelSpacing:
+    interpolator: sitkBSpline
+    normalize: False
+    removeOutliers:
+
