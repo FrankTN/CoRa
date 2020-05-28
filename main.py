@@ -11,7 +11,8 @@ from radiomics import generalinfo
 import SimpleITK as sitk
 import os
 
-#import utilities
+
+# import utilities
 
 
 def ROI_sampling(mask: sitk.Image) -> sitk.Image:
@@ -23,28 +24,32 @@ def ROI_sampling(mask: sitk.Image) -> sitk.Image:
     discretized_mask = sitk.Cast(mask, sitk.sitkInt32)
     output = sitk.Image(mask.GetSize(), sitk.sitkInt32)
 
-
     # For each slice in the mask we try to find a suitable region
     for z in np.arange(discretized_mask.GetDepth()):
         # Extract a slice from the mask
-        image = discretized_mask[:, :, z.item()]
-        img_arr = sitk.GetArrayFromImage(image)
+        img = discretized_mask[:, :, z.item()]
+        img_arr = sitk.GetArrayFromImage(img)
+
         # Erode the mask using a 20 x 20 box
-        img_arr = ndimage.binary_erosion(img_arr, structure=np.ones((20, 20))).astype(img_arr.dtype)
-        out_array = sitk.GetArrayFromImage(output[:, :, z.item()])
+        img_arr_eroded = ndimage.binary_erosion(img_arr, structure=np.ones((20, 20)))
+        out_arr = sitk.GetArrayFromImage(output[:, :, z.item()])
 
         # Pick a random location within the eroded mask, this will be the new center of our window
-        indices = np.nonzero(img_arr)
+        indices = np.nonzero(img_arr_eroded)
         # Check if there are any indices in the tuple
         if len(indices[0]):
-            random_index = randint(0, len(indices[0])-1)
-            center = indices[0][random_index], indices[1][random_index]
+            random_index = randint(0, len(indices[0]) - 1)
             # Create a new image of the intersect of the mask with the selected window
-            out_array[center[0]-10:center[0]+10,center[1]-10:center[1]+10] = img_arr[center[0]-10:center[0]+10,center[1]-10:center[1]+10]
+            c_x = indices[0][random_index]
+            c_y = indices[1][random_index]
 
+            out_arr[c_x-10:c_x+10, c_y-10:c_y+10] = img_arr[c_x-10:c_x+10, c_y-10:c_y+10]
+            assert np.count_nonzero(out_arr[c_x-10:c_x+10, c_y-10:c_y+10]) == 400
         # Paste the new image into the output image
-        img_vol = sitk.JoinSeries(sitk.GetImageFromArray(out_array))
+        img_vol = sitk.JoinSeries(sitk.GetImageFromArray(out_arr))
+        print(img_vol.GetOrigin())
         output = sitk.Paste(output, img_vol, img_vol.GetSize(), destinationIndex=[0, 0, z.item()])
+    output.CopyInformation(mask)
     return output
 
 
