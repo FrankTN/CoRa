@@ -1,0 +1,3 @@
+data_path,mask_path
+data/tr_im.nii,sampled.nii
+data/tr_im.nii,sampled.nii

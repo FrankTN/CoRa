@@ -1,123 +1,27 @@
 import csv
-import logging
-from random import randint
-
-import numpy as np
-from scipy import ndimage
 
 import radiomics
-from radiomics import featureextractor
 from radiomics import generalinfo
+import utilities as ut
+import radiomics_funcs as rf
 
-import SimpleITK as sitk
-import os
-
-import utilities
-
-#
 HI_VERBOSITY = 10
 LO_VERBOSITY = 40
 
-def ROI_sampling(mask: sitk.Image) -> sitk.Image:
-    """
-    Clips the default mask using a standard area, overcoming the area dependence of certain first order measures such as
-    Shannon entropy.
-    """
-    # The original type is float64, we convert to int32
-    discretized_mask = sitk.Cast(mask, sitk.sitkInt32)
-    output = sitk.Image(mask.GetSize(), sitk.sitkInt32)
-
-    # For each slice in the mask we try to find a suitable region
-    for z in np.arange(discretized_mask.GetDepth()):
-        # Extract a slice from the mask
-        img = discretized_mask[:, :, z.item()]
-        img_arr = sitk.GetArrayFromImage(img)
-
-        # Erode the mask using a 20 x 20 box
-        img_arr_eroded = ndimage.binary_erosion(img_arr, structure=np.ones((20, 20)))
-        out_arr = sitk.GetArrayFromImage(output[:, :, z.item()])
-
-        # Pick a random location within the eroded mask, this will be the new center of our window
-        indices = np.nonzero(img_arr_eroded)
-        # Check if there are any indices in the tuple
-        if len(indices[0]):
-            random_index = randint(0, len(indices[0]) - 1)
-            # Create a new image of the intersect of the mask with the selected window
-            c_x = indices[0][random_index]
-            c_y = indices[1][random_index]
-
-            out_arr[c_x-10:c_x+10, c_y-10:c_y+10] = img_arr[c_x-10:c_x+10, c_y-10:c_y+10]
-            assert np.count_nonzero(out_arr[c_x-10:c_x+10, c_y-10:c_y+10]) == 400
-        # Paste the new image into the output image
-        img_vol = sitk.JoinSeries(sitk.GetImageFromArray(out_arr))
-        output = sitk.Paste(output, img_vol, img_vol.GetSize(), destinationIndex=[0, 0, z.item()])
-    output.CopyInformation(mask)
-    return output
-
-
-def extract_features(files, extractor):
-    """
-    This function extracts features from a list of file and masks as specified by the names parameter
-    returns a feature vector
-    """
-    feature_vector = list()
-    print("Calculating features")
-    # TODO Efficiently extract for all labels in mask
-    for (image, mask) in files:
-        feature_vector.append(extractor.execute(image, mask))
-    return feature_vector
-
-
-
 if __name__ == '__main__':
-
-    # Currently uses hardcoded paths
-    imageName = os.path.realpath('data/tr_im.nii')
-    maskName = os.path.realpath('sampled.nii')
-    paramName = os.path.realpath('params.yaml')
-
-    image = sitk.ReadImage(imageName)
-    mask = sitk.ReadImage(maskName)
-
-    # sitk.WriteImage(ROI_sampling(mask), 'sampled.nii')
-
-    # get pyradiomics logger, loglevel DEBUG
-    logger = radiomics.logger
-    logger.setLevel(logging.DEBUG)
-
-    # Set up the handler to write out all log entries to a file
-    handler = logging.FileHandler(filename='testLog.txt', mode='w')
-    formatter = logging.Formatter("%(levelname)s:%(name)s: %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-    # Initialize feature extractor
-    f_extractor = featureextractor.RadiomicsFeatureExtractor(paramName)
     radiomics.setVerbosity(HI_VERBOSITY)
+    rf.setup_logger()
 
-    print("Pixel Type    {}".format(image.GetPixelID()))
-    print("Size          {}".format(image.GetSize()))
-    print("Origin        {}".format(image.GetOrigin()))
-    print("Spacing       {}".format(image.GetSpacing()))
-    print("Direction     {}".format(image.GetDirection()))
+    f_extractor = rf.initialize_extractor('params.yaml')
+    file_list = ut.read_files('data_paths.csv')
+
+    # image = sitk.ReadImage(file_list[0][0])
+    # mask = sitk.ReadImage('sampled.nii')
 
     info = generalinfo.GeneralInfo()
     print(info.getGeneralInfo())
 
-    files = list()
-    files.append((image, mask))
-    features = extract_features(files, f_extractor)
-    utilities.print_features(features)
+    features = rf.extract_features(file_list, f_extractor)
 
-    # Store the calculated features in a csv file
-    csv_file = "results.csv"
-    csv_columns = ['Name', 'Value']
-
-    try:
-        with open(csv_file, 'w') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(csv_columns)
-            for key, value in features[0].items():
-                writer.writerow([key,value])
-    except IOError:
-        print("I/O error")
+    ut.print_features(features)
+    ut.store_features(features)
