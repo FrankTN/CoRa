@@ -14,4 +14,4 @@ if __name__ == '__main__':
 
     # Currently we print the results to the screen and we store them in results.csv
     ut.print_features(features)
-    ut.store_features(features, 'results.csv')
+    ut.store_features(features, file_list, 'results.csv')

@@ -24,16 +24,17 @@ def read_files(file_path):
     return path_list
 
 
-def store_features(features, target_file):
-    # Store the calculated features in a csv file
-    csv_columns = ['Name', 'Value']
-
+def store_features(features, file_names, out_path):
+    # Store the calculated features in a csv file in default pyradiomics batch output style
     try:
-        with open(target_file, 'w') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(csv_columns)
-            for scan in features:
-                for key, value in scan.items():
-                    writer.writerow([key, value])
+        # Take the parameter names from the first feature vector
+        csv_columns = ['Image', 'Mask', *list(features[0].keys())]
+        with open(out_path, 'w') as out_file:
+            writer = csv.DictWriter(out_file, fieldnames=csv_columns)
+            writer.writeheader()
+            for scan, file_name in zip(features, file_names):
+                scan['Image'] = file_name[0]
+                scan['Mask'] = file_name[1]
+                writer.writerow(scan)
     except IOError:
         print("I/O error")
