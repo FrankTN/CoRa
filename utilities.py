@@ -24,13 +24,12 @@ def read_files(file_path):
     return path_list
 
 
-def store_features(features):
+def store_features(features, target_file):
     # Store the calculated features in a csv file
-    csv_file = "results.csv"
     csv_columns = ['Name', 'Value']
 
     try:
-        with open(csv_file, 'w') as csvfile:
+        with open(target_file, 'w') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(csv_columns)
             for scan in features:

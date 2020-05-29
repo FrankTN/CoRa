@@ -3,9 +3,25 @@ import logging
 import SimpleITK as sitk
 import numpy as np
 import radiomics
-from radiomics import featureextractor
+from radiomics import featureextractor, generalinfo
 from scipy import ndimage
 from random import randint
+
+HI_VERBOSITY = 10
+LO_VERBOSITY = 40
+
+
+def setup_logger():
+    radiomics.setVerbosity(HI_VERBOSITY)
+    # get pyradiomics logger, loglevel DEBUG
+    logger = radiomics.logger
+    logger.setLevel(logging.DEBUG)
+
+    # Set up the handler to write out all log entries to a file
+    handler = logging.FileHandler(filename='testLog.txt', mode='w')
+    formatter = logging.Formatter("%(levelname)s:%(name)s: %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
 
 
 def ROI_sampling(mask: sitk.Image) -> sitk.Image:
@@ -45,18 +61,6 @@ def ROI_sampling(mask: sitk.Image) -> sitk.Image:
     return output
 
 
-def setup_logger():
-    # get pyradiomics logger, loglevel DEBUG
-    logger = radiomics.logger
-    logger.setLevel(logging.DEBUG)
-
-    # Set up the handler to write out all log entries to a file
-    handler = logging.FileHandler(filename='testLog.txt', mode='w')
-    formatter = logging.Formatter("%(levelname)s:%(name)s: %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-
 def initialize_extractor(parameters: str) -> featureextractor.RadiomicsFeatureExtractor:
     # Initialize feature extractor
     return featureextractor.RadiomicsFeatureExtractor(parameters)
@@ -81,3 +85,8 @@ def print_img_info(image: sitk.Image) -> None:
     print("Origin        {}".format(image.GetOrigin()))
     print("Spacing       {}".format(image.GetSpacing()))
     print("Direction     {}".format(image.GetDirection()))
+
+
+def print_gen_info() -> None:
+    info = generalinfo.GeneralInfo()
+    print(info.getGeneralInfo())
