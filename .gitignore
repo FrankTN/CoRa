@@ -1,4 +1,11 @@
+# Directories and single files
 .idea
 testLog.txt
 venv
 data
+__pycache__
+
+# File extensions
+*.nii
+*.pptx
+*.csv
