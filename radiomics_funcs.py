@@ -12,14 +12,14 @@ HI_VERBOSITY = 10
 LO_VERBOSITY = 40
 
 
-def setup_logger():
+def setup_logger(log_path):
     radiomics.setVerbosity(HI_VERBOSITY)
     # get pyradiomics logger, loglevel DEBUG
     logger = radiomics.logger
     logger.setLevel(logging.DEBUG)
 
     # Set up the handler to write out all log entries to a file
-    handler = logging.FileHandler(filename='testLog.txt', mode='w')
+    handler = logging.FileHandler(filename=log_path, mode='w')
     formatter = logging.Formatter("%(levelname)s:%(name)s: %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
