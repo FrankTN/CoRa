@@ -1,4 +1,5 @@
 import logging
+import os
 
 import SimpleITK as sitk
 import numpy as np
@@ -22,6 +23,7 @@ def setup_logger():
     formatter = logging.Formatter("%(levelname)s:%(name)s: %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
+    return logger
 
 
 def ROI_sampling(mask: sitk.Image) -> sitk.Image:
@@ -61,9 +63,16 @@ def ROI_sampling(mask: sitk.Image) -> sitk.Image:
     return output
 
 
-def initialize_extractor(parameters: str) -> featureextractor.RadiomicsFeatureExtractor:
-    # Initialize feature extractor
-    return featureextractor.RadiomicsFeatureExtractor(parameters)
+def initialize_extractor(parameters: str, logger: radiomics.logger) -> featureextractor.RadiomicsFeatureExtractor:
+    # Initialize feature extractor, if inputfile is valid
+    if os.path.isfile(parameters):
+        extractor = featureextractor.RadiomicsFeatureExtractor(parameters)
+    else:  # Parameter file not found, use hardcoded settings instead
+        settings = {'binWidth': 25, 'resampledPixelSpacing': None, 'interpolator': sitk.sitkBSpline,
+                    'enableCExtensions': True}
+        extractor = featureextractor.RadiomicsFeatureExtractor(**settings)
+    logger.info("Parameters loaded")
+    return extractor
 
 
 def extract_features(files: list, extractor: featureextractor.RadiomicsFeatureExtractor):
