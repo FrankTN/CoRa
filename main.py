@@ -1,5 +1,5 @@
 import os
-from multiprocessing import cpu_count
+import multiprocessing as mp
 
 import radiomics_funcs as rf
 import utilities as ut
@@ -12,6 +12,8 @@ INPUT_CSV = os.path.join(ROOT, 'cases.csv')
 OUTPUT_CSV = os.path.join(ROOT, 'results.csv')
 
 if __name__ == '__main__':
+    print("Number of processors: {}".format(mp.cpu_count()))
+    pool = mp.Pool(mp.cpu_count())
 
     # Write logs to logfile, set verbosity
     lgr = rf.setup_logger(LOG)
@@ -21,7 +23,15 @@ if __name__ == '__main__':
     file_list = ut.read_files(INPUT_CSV, lgr)
 
     # Perform the feature calculation and return vector of features
-    features = rf.extract_features(file_list, f_extractor)
+    result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor)) for file in
+                file_list]
+
+    # Unpack the worker results back into desired features
+    features = [r.get() for r in result_objects]
+
+    # Cleanup after parallel work
+    pool.close()
+    pool.join()
 
     # Currently we print the results to the screen and we store them in results.csv
     ut.print_features(features)

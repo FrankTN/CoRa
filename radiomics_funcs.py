@@ -77,15 +77,12 @@ def initialize_extractor(parameters: str, logger: radiomics.logger) -> featureex
 
 def extract_features(files: list, extractor: featureextractor.RadiomicsFeatureExtractor):
     """
-    This function extracts features from a list of file and masks as specified by the names parameter
-    returns a feature vector
+    Reads a tuple of file and mask, extracts features
     """
-    feature_vector = list()
+    image, mask = files
     print("Calculating features")
     # TODO Efficiently extract for all labels in mask
-    for (image, mask) in files:
-        feature_vector.append(extractor.execute(image, mask))
-    return feature_vector
+    return extractor.execute(image, mask)
 
 
 def print_img_info(image: sitk.Image) -> None:

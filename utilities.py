@@ -8,7 +8,7 @@ def print_features(features_list) -> None:
 
 
 def read_files(file_path, logger):
-    """ Reads a csv file containing pairs of scans and masks """
+    """ Reads a csv file containing pairs of scans and masks, returns a list of masks """
     try:
         with open(file_path, newline='') as csvfile:
             reader = csv.reader(csvfile, quotechar='|')
