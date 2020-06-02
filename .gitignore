@@ -1,6 +1,5 @@
-# Directories and single files
+# Directories
 .idea
-testLog.txt
 venv
 data
 __pycache__
@@ -9,3 +8,4 @@ __pycache__
 *.nii
 *.pptx
 *.csv
+*.txt
