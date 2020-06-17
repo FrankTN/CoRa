@@ -11,9 +11,12 @@ LOG = os.path.join(ROOT, 'log.txt')
 INPUT_CSV = os.path.join(ROOT, 'cases.csv')
 OUTPUT_CSV = os.path.join(ROOT, 'results.csv')
 
+# Setup other constants
+CPU_COUNT = mp.cpu_count()
+
 if __name__ == '__main__':
     print("Number of processors: {}".format(mp.cpu_count()))
-    pool = mp.Pool(mp.cpu_count())
+    pool = mp.Pool(CPU_COUNT)
 
     # Write logs to logfile, set verbosity
     lgr = rf.setup_logger(LOG)
@@ -34,5 +37,4 @@ if __name__ == '__main__':
     pool.join()
 
     # Currently we print the results to the screen and we store them in results.csv
-    ut.print_features(features)
     ut.store_features(features, file_list, OUTPUT_CSV, lgr)

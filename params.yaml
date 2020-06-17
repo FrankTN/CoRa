@@ -1,22 +1,32 @@
+# Using all image types
 imageType:
     Original: {}
-    #LoG:
-     #sigma: [1.0, 1.0]
-    #Wavelet:
-        #binWidth: 10
+    Wavelet:
+        binWidth: 10
+    LoG:
+     sigma: [1.0, 1.0]
+    Square: {}
+    SquareRoot: {}
+    Logarithm: {}
+    Exponential: {}
+    Gradient: {}
+    LBP2D: {}
+
 
 # Currently enabling all features
 featureClass:
-    #firstorder:
+    firstorder:
     shape:
-    #glcm:
-    #glrlm:
-    #glszm:
-    #gldm:
-    #ngtdm:
+    glcm:
+    glrlm:
+    glszm:
+    gldm:
+    ngtdm:
 
+# Default settings, force 2D
 setting:
     binWidth: 25
+    force2D: True
     resampledPixelSpacing:
     interpolator: sitkBSpline
     normalize: False
