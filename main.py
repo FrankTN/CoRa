@@ -15,6 +15,7 @@ OUTPUT_CSV = os.path.join(ROOT, 'results.csv')
 CPU_COUNT = mp.cpu_count()
 
 if __name__ == '__main__':
+    ut.data_pathwriter(INPUT_CSV)
     print("Number of processors: {}".format(mp.cpu_count()))
     pool = mp.Pool(CPU_COUNT)
 

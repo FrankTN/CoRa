@@ -39,3 +39,28 @@ def store_features(features, file_names, out_path, logger):
                 writer.writerow(scan)
     except IOError:
         logger.error('Unable to write to output: {}'.format(out_file), exc_info=True)
+
+
+def data_pathwriter(out_path):
+    """ Populates the input path csv at out_path, using hardcoded filenames"""
+    csv_columns = ['Image', 'Mask']
+    with open(out_path, 'w') as out_file:
+        writer = csv.DictWriter(out_file, fieldnames=csv_columns)
+        writer.writeheader()
+        write_medseg(writer)
+
+
+def write_mosmed(writer):
+    pair = {}
+    for i in range(255, 305):
+        pair['Image'] = "data/COVID19_1110/studies/CT-1/study_0" + str(i) + ".nii"
+        pair['Mask'] = "data/COVID19_1110/masks/study_0" + str(i) + "_mask.nii"
+        writer.writerow(pair)
+
+
+def write_medseg(writer):
+    pair = {}
+    for i in range(1, 10):
+        pair['Image'] = "data/rp_im/" + str(i) + ".nii"
+        pair['Mask'] = "data/rp_msk/" + str(i) + ".nii"
+        writer.writerow(pair)
