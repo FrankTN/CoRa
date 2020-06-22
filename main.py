@@ -15,7 +15,8 @@ OUTPUT_CSV = os.path.join(ROOT, 'results.csv')
 CPU_COUNT = mp.cpu_count()
 
 if __name__ == '__main__':
-    ut.data_pathwriter(INPUT_CSV)
+    ut.create_input_names(INPUT_CSV)
+
     print("Number of processors: {}".format(mp.cpu_count()))
     pool = mp.Pool(CPU_COUNT)
 
@@ -25,6 +26,8 @@ if __name__ == '__main__':
     # Setting for extractor are defined in params.yaml, files to process are defined in cases.csv
     f_extractor = rf.initialize_extractor(PARAMS, lgr)
     file_list = ut.read_files(INPUT_CSV, lgr)
+
+    rf.sample_masks(file_list)
 
     # Perform the feature calculation and return vector of features
     result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor)) for file in

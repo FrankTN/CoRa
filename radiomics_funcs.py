@@ -55,7 +55,6 @@ def ROI_sampling(mask: sitk.Image) -> sitk.Image:
             c_y = indices[1][random_index]
 
             out_arr[c_x - 10:c_x + 10, c_y - 10:c_y + 10] = img_arr[c_x - 10:c_x + 10, c_y - 10:c_y + 10]
-            assert np.count_nonzero(out_arr[c_x - 10:c_x + 10, c_y - 10:c_y + 10]) == 400
         # Paste the new image into the output image
         img_vol = sitk.JoinSeries(sitk.GetImageFromArray(out_arr))
         output = sitk.Paste(output, img_vol, img_vol.GetSize(), destinationIndex=[0, 0, z.item()])
@@ -96,3 +95,18 @@ def print_img_info(image: sitk.Image) -> None:
 def print_gen_info() -> None:
     info = generalinfo.GeneralInfo()
     print(info.getGeneralInfo())
+
+
+def sample_masks(file_list):
+    for (_, mask_name) in file_list:
+        mask = sitk.Cast(sitk.ReadImage(mask_name), sitk.sitkInt32)
+
+        # Hardcoded the levels right now, these correspond to the labels within the masks
+        low = 1
+        high = 2
+        for lvl in np.arange(low, high + 1):
+            tmp_mask = sitk.GetArrayFromImage(mask)
+            tmp_mask[tmp_mask != lvl] = 0
+            updated_mask = ROI_sampling(sitk.GetImageFromArray(tmp_mask))
+            mask_prefix, mask_extension = os.path.splitext(mask_name)
+            sitk.WriteImage(updated_mask, mask_prefix + "_sampled_" + str(lvl) + mask_extension)

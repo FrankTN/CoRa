@@ -41,7 +41,7 @@ def store_features(features, file_names, out_path, logger):
         logger.error('Unable to write to output: {}'.format(out_file), exc_info=True)
 
 
-def data_pathwriter(out_path):
+def create_input_names(out_path):
     """ Populates the input path csv at out_path, using hardcoded filenames"""
     csv_columns = ['Image', 'Mask']
     with open(out_path, 'w') as out_file:
@@ -60,7 +60,8 @@ def write_mosmed(writer):
 
 def write_medseg(writer):
     pair = {}
-    for i in range(1, 10):
+    for i in range(1, 2):
         pair['Image'] = "data/rp_im/" + str(i) + ".nii"
         pair['Mask'] = "data/rp_msk/" + str(i) + ".nii"
         writer.writerow(pair)
+

@@ -1,27 +1,27 @@
 # Using all image types
 imageType:
     Original: {}
-    Wavelet:
-        binWidth: 10
-    LoG:
-     sigma: [1.0, 1.0]
-    Square: {}
-    SquareRoot: {}
-    Logarithm: {}
-    Exponential: {}
-    Gradient: {}
-    LBP2D: {}
+#    Wavelet:
+#        binWidth: 10
+#    LoG:
+#     sigma: [1.0, 1.0]
+#    Square: {}
+#    SquareRoot: {}
+#    Logarithm: {}
+#    Exponential: {}
+#    Gradient: {}
+#    LBP2D: {}
 
 
 # Currently enabling all features
 featureClass:
     firstorder:
-    shape:
-    glcm:
-    glrlm:
-    glszm:
-    gldm:
-    ngtdm:
+#    shape:
+#    glcm:
+#    glrlm:
+#    glszm:
+#    gldm:
+#    ngtdm:
 
 # Default settings, force 2D
 setting:
