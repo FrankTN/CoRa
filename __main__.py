@@ -90,5 +90,9 @@ def clean():
         os.remove(path_to_file)
 
 
-if __name__ == '__main__':
+def main():
     cora(prog_name='cora')
+
+
+if __name__ == '__main__':
+    main()

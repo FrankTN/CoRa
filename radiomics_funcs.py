@@ -5,6 +5,7 @@ import SimpleITK as sitk
 import numpy as np
 import radiomics
 from radiomics import featureextractor, generalinfo
+
 from scipy import ndimage
 from random import randint
 
@@ -65,16 +66,16 @@ def ROI_sampling(mask: sitk.Image) -> sitk.Image:
 def initialize_extractor(parameters: str, logger: radiomics.logger) -> featureextractor.RadiomicsFeatureExtractor:
     # Initialize feature extractor, if inputfile is valid
     if os.path.isfile(parameters):
-        extractor = featureextractor.RadiomicsFeatureExtractor(parameters)
+        extractor = radiomics.featureextractor.RadiomicsFeatureExtractor(parameters)
     else:  # Parameter file not found, use hardcoded settings instead
         settings = {'binWidth': 25, 'resampledPixelSpacing': None, 'interpolator': sitk.sitkBSpline,
                     'enableCExtensions': True}
-        extractor = featureextractor.RadiomicsFeatureExtractor(**settings)
+        extractor = radiomics.featureextractor.RadiomicsFeatureExtractor(**settings)
     logger.info("Parameters loaded")
     return extractor
 
 
-def extract_features(files: list, extractor: featureextractor.RadiomicsFeatureExtractor):
+def extract_features(files: list, extractor: radiomics.featureextractor.RadiomicsFeatureExtractor):
     """
     Reads a tuple of file and mask, extracts features
     """
