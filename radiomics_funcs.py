@@ -78,10 +78,11 @@ def extract_features(files: list, extractor: featureextractor.RadiomicsFeatureEx
     """
     Reads a tuple of file and mask, extracts features
     """
-    image, mask = files
+    image, mask, label = files
     print("Calculating features")
     # TODO Efficiently extract for all labels in mask
-    return extractor.execute(image, mask)
+    print(image, mask)
+    return extractor.execute(image, mask, label=int(label))
 
 
 def print_img_info(image: sitk.Image) -> None:
@@ -107,6 +108,8 @@ def sample_masks(file_list):
         for lvl in np.arange(low, high + 1):
             tmp_mask = sitk.GetArrayFromImage(mask)
             tmp_mask[tmp_mask != lvl] = 0
-            updated_mask = ROI_sampling(sitk.GetImageFromArray(tmp_mask))
+            tmp_mask_img = sitk.GetImageFromArray(tmp_mask)
+            tmp_mask_img.CopyInformation(mask)
+            updated_mask = ROI_sampling(tmp_mask_img)
             mask_prefix, mask_extension = os.path.splitext(mask_name)
             sitk.WriteImage(updated_mask, mask_prefix + "_sampled_" + str(lvl) + mask_extension)

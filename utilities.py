@@ -18,7 +18,8 @@ def read_files(file_path, logger):
             for row in reader:
                 data_path = row[0]
                 mask_path = row[1]
-                path_list.append((data_path, mask_path))
+                label = row[2]
+                path_list.append((data_path, mask_path, label))
     except IOError:
         logger.error('Unable to read file {}'.format(file_path), exc_info=True)
     logger.info('Input files loaded')
@@ -43,11 +44,11 @@ def store_features(features, file_names, out_path, logger):
 
 def create_input_names(out_path):
     """ Populates the input path csv at out_path, using hardcoded filenames"""
-    csv_columns = ['Image', 'Mask']
+    csv_columns = ['Image', 'Mask', 'Label']
     with open(out_path, 'w') as out_file:
         writer = csv.DictWriter(out_file, fieldnames=csv_columns)
         writer.writeheader()
-        write_medseg(writer)
+        write_medseg(writer, True)
 
 
 def write_mosmed(writer):
@@ -58,10 +59,20 @@ def write_mosmed(writer):
         writer.writerow(pair)
 
 
-def write_medseg(writer):
+def write_medseg(writer, sampled: bool = False):
     pair = {}
-    for i in range(1, 2):
-        pair['Image'] = "data/rp_im/" + str(i) + ".nii"
-        pair['Mask'] = "data/rp_msk/" + str(i) + ".nii"
-        writer.writerow(pair)
+    for i in range(2, 3):
+        if sampled:
+            pair['Image'] = "data/rp_im/" + str(i) + ".nii"
+            pair['Mask'] = "data/rp_msk/" + str(i) + "_sampled_1.nii"
+            pair['Label'] = "1"
+            writer.writerow(pair)
+            pair['Image'] = "data/rp_im/" + str(i) + ".nii"
+            pair['Mask'] = "data/rp_msk/" + str(i) + "_sampled_2.nii"
+            pair['Label'] = "2"
+            writer.writerow(pair)
+        else:
+            pair['Image'] = "data/rp_im/" + str(i) + ".nii"
+            pair['Mask'] = "data/rp_msk/" + str(i) + ".nii"
+            writer.writerow(pair)
 
