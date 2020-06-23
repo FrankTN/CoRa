@@ -60,6 +60,35 @@ def run(input_f, output_f, params, log, parallel):
     ut.store_features(features, file_list, output_f, lgr)
 
 
+# @cora.command()
+# @click.option('-p', '--set-pars', type=click.Choice(['simple', 'full'], case_sensitive=False))
+# def params(set_pars):
+#     click.echo(set_pars)
+
+
+@cora.command()
+@click.option('-o', '--output-f', default=INPUT_CSV, help='Cases target file')
+@click.option('-c', '--case-type', type=click.Choice(['medseg', 'mosmed'], case_sensitive=False), help="define which "
+                                                                                                       "dataset to "
+                                                                                                       "prepare")
+def cases(output_f, case_type):
+    """ Creates a case file .csv based on the type of dataset being analyzed"""
+    if case_type == 'medseg':
+        ut.create_input_names(output_f, ut.write_medseg)
+    elif case_type == 'mosmed':
+        pass
+
+
+@cora.command()
+@click.confirmation_option(prompt='Are you sure you want to remove all .csv files?')
+def clean():
+    click.echo("Removing all .csv files")
+    files_in_directory = os.listdir(os.getcwd())
+    filtered_files = [file for file in files_in_directory if file.endswith(".csv")]
+    for file in filtered_files:
+        path_to_file = os.path.join(os.getcwd(), file)
+        os.remove(path_to_file)
+
+
 if __name__ == '__main__':
     cora(prog_name='cora')
-    # ut.create_input_names(INPUT_CSV)
