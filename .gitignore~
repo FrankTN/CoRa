@@ -3,9 +3,6 @@
 venv
 data
 __pycache__
-cora.egg-info
-dist
-build
 
 # File extensions
 *.nii
