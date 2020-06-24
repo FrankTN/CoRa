@@ -83,7 +83,10 @@ def extract_features(files: list, extractor: radiomics.featureextractor.Radiomic
     print("Calculating features")
     # TODO Efficiently extract for all labels in mask
     print(image, mask)
-    return extractor.execute(image, mask, label=int(label))
+    lab_val = None
+    if label:
+        lab_val = int(label)
+    return extractor.execute(image, mask, label=lab_val)
 
 
 def print_img_info(image: sitk.Image) -> None:
