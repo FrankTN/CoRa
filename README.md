@@ -1,6 +1,15 @@
 # COVID-19 Radiomics
 
-This repo contains code to extract features from COVID-19 chest CT scans using the pyradiomics library. This code was written as part of my master's thesis.
+This repo contains a python wrapper for the pyradiomics library. This wrapper is useful for automating the radiomic analysis of a few COVID-19 chest CT datasets. This code was written as part of my master's thesis. 
+
+## Cora (COVID Radiomics) CLI
+Cora is a simple command line interface, tailored for use with specific datasets provided in the `data/` folder.
+
+### Installation
+To install cora (on Linux systems), navigate to the source folder and run `pip install .`. This will register cora as a command line tool.
+
+### Commands
+To show options simply run `cora`.
 
 ## Versioning
 
