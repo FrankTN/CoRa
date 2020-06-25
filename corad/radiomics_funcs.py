@@ -75,7 +75,8 @@ def initialize_extractor(parameters: str, logger: radiomics.logger) -> featureex
     return extractor
 
 
-def extract_features(files: list, extractor: radiomics.featureextractor.RadiomicsFeatureExtractor):
+def extract_features(files: list, extractor: radiomics.featureextractor.RadiomicsFeatureExtractor,
+                     logger: radiomics.logger):
     """
     Reads a tuple of file and mask, extracts features
     """
@@ -86,7 +87,12 @@ def extract_features(files: list, extractor: radiomics.featureextractor.Radiomic
     lab_val = None
     if label:
         lab_val = int(label)
-    return extractor.execute(image, mask, label=lab_val)
+    result = None
+    try:
+        result = extractor.execute(image, mask, label=lab_val)
+    except ValueError:
+        logger.warning("Unable to extract features from image {}")
+    return result
 
 
 def print_img_info(image: sitk.Image) -> None:

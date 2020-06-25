@@ -46,7 +46,7 @@ def extract(input_f, output_f, params, log, parallel):
         pool = mp.Pool(CPU_COUNT)
 
         # Perform the feature calculation and return vector of features
-        result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor)) for file in
+        result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor, lgr)) for file in
                           file_list]
 
         # Unpack the worker results back into desired features
@@ -58,7 +58,7 @@ def extract(input_f, output_f, params, log, parallel):
     else:
         features = list()
         for file in file_list:
-            features.append(rf.extract_features(file, f_extractor))
+            features.append(rf.extract_features(file, f_extractor, lgr))
 
     # Currently we print the results to the screen and we store them in results.csv
     ut.store_features(features, file_list, output_f, lgr)

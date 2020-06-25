@@ -6,7 +6,6 @@ st.setup(
     author='Frank te Nijenhuis',
     packages=st.find_packages(),
     description='CLI wrapper for pyradiomics implementing COVID analysis ',
-    # py_modules=['corad'],
     install_requires=[
         'setuptools',
         'numpy',
