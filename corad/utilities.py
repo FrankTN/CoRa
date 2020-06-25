@@ -28,6 +28,8 @@ def read_files(file_path, logger):
 
 def store_features(features, file_names, out_path, logger):
     # Store the calculated features in a csv file in default pyradiomics batch output style
+    if not features:
+        return
     try:
         # Take the parameter names from the first feature vector
         csv_columns = ['Image', 'Mask', *list(features[0].keys())]

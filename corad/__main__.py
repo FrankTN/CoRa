@@ -46,11 +46,11 @@ def extract(input_f, output_f, params, log, parallel):
         pool = mp.Pool(CPU_COUNT)
 
         # Perform the feature calculation and return vector of features
-        result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor, lgr)) for file in
+        result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor)) for file in
                           file_list]
-
         # Unpack the worker results back into desired features
         features = [r.get() for r in result_objects]
+        features = [i for i in features if i]
 
         # Cleanup after parallel work
         pool.close()
@@ -58,7 +58,9 @@ def extract(input_f, output_f, params, log, parallel):
     else:
         features = list()
         for file in file_list:
-            features.append(rf.extract_features(file, f_extractor, lgr))
+            result = rf.extract_features(file, f_extractor, lgr)
+            if result:
+                features.append(result)
 
     # Currently we print the results to the screen and we store them in results.csv
     ut.store_features(features, file_list, output_f, lgr)
@@ -79,7 +81,7 @@ def test():
 @cora.command()
 @click.option('-o', '--output-f', default=INPUT_CSV, help='Cases target file')
 @click.option('-c', '--case-type', type=click.Choice(['medseg', 'mosmed', 'simple'], case_sensitive=False), help=
-              "define which dataset to prepare")
+"define which dataset to prepare")
 def cases(output_f, case_type):
     """ Creates a case file .csv based on the type of dataset being analyzed"""
     if case_type == 'medseg':
