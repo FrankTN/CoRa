@@ -10,7 +10,7 @@ ROOT = os.getcwd()
 PARAMS = os.path.join(ROOT, 'params.yaml')
 LOG = os.path.join(ROOT, 'log.txt')
 INPUT_CSV = os.path.join(ROOT, 'cases.csv')
-OUTPUT_CSV = os.path.join(ROOT, 'results_d.csv')
+OUTPUT_CSV = os.path.join(ROOT, 'results.csv')
 
 # Setup other constants
 CPU_COUNT = mp.cpu_count()
@@ -29,6 +29,10 @@ def cora():
 @click.option('-l', '--log', default=LOG, help='Log location, default log.txt')
 @click.option('-p', '--parallel', default=False, type=bool, is_flag=True, help='Parallelization flag')
 def run(input_f, output_f, params, log, parallel):
+    extract(input_f, output_f, params, log, parallel)
+
+
+def extract(input_f, output_f, params, log, parallel):
     # Write logs to logfile, set verbosity
     lgr = rf.setup_logger(log)
 
@@ -65,16 +69,23 @@ def run(input_f, output_f, params, log, parallel):
 # def params(set_pars):
 #     click.echo(set_pars)
 
+@cora.command()
+def test():
+    """ Runs a test case using simple parameters"""
+    ut.create_input_names(INPUT_CSV, ut.write_simple)
+    extract(INPUT_CSV, OUTPUT_CSV, PARAMS, LOG, False)
+
 
 @cora.command()
 @click.option('-o', '--output-f', default=INPUT_CSV, help='Cases target file')
-@click.option('-c', '--case-type', type=click.Choice(['medseg', 'mosmed'], case_sensitive=False), help="define which "
-                                                                                                       "dataset to "
-                                                                                                       "prepare")
+@click.option('-c', '--case-type', type=click.Choice(['medseg', 'mosmed', 'simple'], case_sensitive=False), help=
+              "define which dataset to prepare")
 def cases(output_f, case_type):
     """ Creates a case file .csv based on the type of dataset being analyzed"""
     if case_type == 'medseg':
         ut.create_input_names(output_f, ut.write_medseg)
+    elif case_type == 'simple':
+        ut.create_input_names(output_f, ut.write_simple)
     elif case_type == 'mosmed':
         pass
 

@@ -59,9 +59,9 @@ def write_mosmed(writer):
         writer.writerow(pair)
 
 
-def write_medseg(writer, sampled: bool = False):
+def write_medseg(writer, target=10, sampled: bool = False):
     pair = {}
-    for i in range(1, 10):
+    for i in range(1, target):
         if sampled:
             pair['Image'] = "data/rp_im/" + str(i) + ".nii"
             pair['Mask'] = "data/rp_msk/" + str(i) + "_sampled_1.nii"
@@ -76,3 +76,6 @@ def write_medseg(writer, sampled: bool = False):
             pair['Mask'] = "data/rp_msk/" + str(i) + ".nii"
             writer.writerow(pair)
 
+
+def write_simple(writer):
+    write_medseg(writer, 2)
