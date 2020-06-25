@@ -42,13 +42,13 @@ def store_features(features, file_names, out_path, logger):
         logger.error('Unable to write to output: {}'.format(out_file), exc_info=True)
 
 
-def create_input_names(out_path):
+def create_input_names(out_path, case_type):
     """ Populates the input path csv at out_path, using hardcoded filenames"""
     csv_columns = ['Image', 'Mask', 'Label']
     with open(out_path, 'w') as out_file:
         writer = csv.DictWriter(out_file, fieldnames=csv_columns)
         writer.writeheader()
-        write_medseg(writer, True)
+        case_type(writer)
 
 
 def write_mosmed(writer):
@@ -59,9 +59,9 @@ def write_mosmed(writer):
         writer.writerow(pair)
 
 
-def write_medseg(writer, sampled: bool = False):
+def write_medseg(writer, target=10, sampled: bool = False):
     pair = {}
-    for i in range(2, 3):
+    for i in range(1, target):
         if sampled:
             pair['Image'] = "data/rp_im/" + str(i) + ".nii"
             pair['Mask'] = "data/rp_msk/" + str(i) + "_sampled_1.nii"
@@ -76,3 +76,6 @@ def write_medseg(writer, sampled: bool = False):
             pair['Mask'] = "data/rp_msk/" + str(i) + ".nii"
             writer.writerow(pair)
 
+
+def write_simple(writer):
+    write_medseg(writer, 2)
