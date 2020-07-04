@@ -33,8 +33,8 @@ def ROI_sampling(mask: sitk.Image) -> sitk.Image:
     Shannon entropy.
     """
     # The original type is float64, we convert to int32
-    discretized_mask = sitk.Cast(mask, sitk.sitkInt32)
-    output = sitk.Image(mask.GetSize(), sitk.sitkInt32)
+    discretized_mask = sitk.Cast(mask, sitk.sitkUInt32)
+    output = sitk.Image(mask.GetSize(), sitk.sitkUInt32)
 
     # For each slice in the mask we try to find a suitable region
     for z in np.arange(discretized_mask.GetDepth()):
@@ -90,10 +90,10 @@ def extract_features(files: list, extractor: radiomics.featureextractor.Radiomic
     result = None
     try:
         result = extractor.execute(image, mask, label=lab_val)
-    except ValueError:
+    except ValueError as err:
         if logger:
-            logger.warning("Unable to extract features from image {}")
-        print("Unable to extract features from image {}")
+            logger.warning("Unable to extract features, error: {}".format(err))
+        print("Unable to extract features, error: {}".format(err))
     return result
 
 
