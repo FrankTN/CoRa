@@ -111,12 +111,12 @@ def print_gen_info() -> None:
 
 
 def sample_masks(file_list):
-    for (_, mask_name) in file_list:
+    for (_, mask_name, _) in file_list:
         mask = sitk.Cast(sitk.ReadImage(mask_name), sitk.sitkInt32)
 
         # Hardcoded the levels right now, these correspond to the labels within the masks
         low = 1
-        high = 2
+        high = 1
         for lvl in np.arange(low, high + 1):
             tmp_mask = sitk.GetArrayFromImage(mask)
             tmp_mask[tmp_mask != lvl] = 0

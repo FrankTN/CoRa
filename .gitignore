@@ -6,7 +6,7 @@ __pycache__
 cora.egg-info
 dist
 build
-corad/cnn
+corad/ild-cnn
 
 # File extensions
 *.nii

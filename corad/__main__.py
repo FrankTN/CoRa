@@ -81,7 +81,7 @@ def test():
 @cora.command()
 @click.option('-o', '--output-f', default=INPUT_CSV, help='Cases target file')
 @click.option('-c', '--case-type', type=click.Choice(['medseg', 'mosmed', 'simple'], case_sensitive=False), help=
-"define which dataset to prepare")
+              "define which dataset to prepare")
 def cases(output_f, case_type):
     """ Creates a case file .csv based on the type of dataset being analyzed"""
     if case_type == 'medseg':
@@ -89,7 +89,7 @@ def cases(output_f, case_type):
     elif case_type == 'simple':
         ut.create_input_names(output_f, ut.write_simple)
     elif case_type == 'mosmed':
-        pass
+        ut.create_input_names(output_f, ut.write_mosmed)
 
 
 @cora.command()
@@ -101,6 +101,15 @@ def clean():
     for file in filtered_files:
         path_to_file = os.path.join(os.getcwd(), file)
         os.remove(path_to_file)
+
+
+@cora.command()
+@click.option('-i', '--input-f', default=INPUT_CSV, help='Input file, containing list of files and corresponding '
+                                                         'masks, a third label column is optional')
+def sample(input_f):
+    lgr = rf.setup_logger(LOG)
+    file_list = ut.read_files(input_f, lgr)
+    rf.sample_masks(file_list)
 
 
 def main():

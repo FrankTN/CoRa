@@ -53,12 +53,17 @@ def create_input_names(out_path, case_type):
         case_type(writer)
 
 
-def write_mosmed(writer):
+def write_mosmed(writer, sampled: bool = True):
     pair = {}
     for i in range(255, 305):
-        pair['Image'] = "data/COVID19_1110/studies/CT-1/study_0" + str(i) + ".nii"
-        pair['Mask'] = "data/COVID19_1110/masks/study_0" + str(i) + "_mask.nii"
-        writer.writerow(pair)
+        if sampled:
+            pair['Image'] = "data/COVID19_1110/studies/CT-1/study_0" + str(i) + ".nii"
+            pair['Mask'] = "data/COVID19_1110/masks/study_0" + str(i) + "_mask_sampled_1.nii"
+            writer.writerow(pair)
+        else:
+            pair['Image'] = "data/COVID19_1110/studies/CT-1/study_0" + str(i) + ".nii"
+            pair['Mask'] = "data/COVID19_1110/masks/study_0" + str(i) + "_mask.nii"
+            writer.writerow(pair)
 
 
 def write_medseg(writer, target=10, sampled: bool = False):
