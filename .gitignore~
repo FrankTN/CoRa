@@ -7,7 +7,6 @@ cora.egg-info
 dist
 build
 corad/ild-cnn
-corad/kerastest
 
 # File extensions
 *.nii
