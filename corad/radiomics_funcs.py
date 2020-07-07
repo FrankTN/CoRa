@@ -14,7 +14,7 @@ LO_VERBOSITY = 40
 
 
 def setup_logger(log_path):
-    radiomics.setVerbosity(HI_VERBOSITY)
+    radiomics.setVerbosity(LO_VERBOSITY)
     # get pyradiomics logger, loglevel DEBUG
     logger = radiomics.logger
     logger.setLevel(logging.DEBUG)
@@ -81,9 +81,9 @@ def extract_features(files: list, extractor: radiomics.featureextractor.Radiomic
     Reads a tuple of file and mask, extracts features
     """
     image, mask, label = files
-    print("Calculating features")
+    # print("Calculating features")
     # TODO Efficiently extract for all labels in mask
-    print(image, mask)
+    # print(image, mask)
     lab_val = None
     if label:
         lab_val = int(label)
@@ -93,7 +93,7 @@ def extract_features(files: list, extractor: radiomics.featureextractor.Radiomic
     except ValueError as err:
         if logger:
             logger.warning("Unable to extract features, error: {}".format(err))
-        print("Unable to extract features, error: {}".format(err))
+        # print("Unable to extract features, error: {}".format(err))
     return result
 
 

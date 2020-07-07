@@ -2,13 +2,14 @@ import csv
 
 
 def print_features(features_list) -> None:
+    """Prints the feature name and its value"""
     for features in features_list:
         for featureName in features.keys():
             print("Computed %s: %s" % (featureName, features[featureName]))
 
 
 def read_files(file_path, logger):
-    """ Reads a csv file containing pairs of scans and masks, returns a list of masks """
+    """ Reads a csv file containing pairs of scan names and masks, returns a list of masks """
     try:
         with open(file_path, newline='') as csvfile:
             reader = csv.reader(csvfile, quotechar='|')
@@ -54,6 +55,7 @@ def create_input_names(out_path, case_type):
 
 
 def write_mosmed(writer, sampled: bool = True):
+    """Writes the cases for the Moscow dataset to the writer object."""
     pair = {}
     for i in range(255, 305):
         if sampled:
@@ -67,6 +69,7 @@ def write_mosmed(writer, sampled: bool = True):
 
 
 def write_medseg(writer, target=10, sampled: bool = False):
+    """Writes the cases for the Italian dataset to the writer object."""
     pair = {}
     for i in range(1, target):
         if sampled:
@@ -85,4 +88,5 @@ def write_medseg(writer, target=10, sampled: bool = False):
 
 
 def write_simple(writer):
+    """Writes the first 2 cases of the Italian dataset to the writer object."""
     write_medseg(writer, 2)

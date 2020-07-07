@@ -1,6 +1,7 @@
 import os
 import multiprocessing as mp
 import click
+from tqdm import tqdm
 
 import radiomics_funcs as rf
 import utilities as ut
@@ -43,11 +44,13 @@ def extract(input_f, output_f, params, log, parallel):
     if parallel:
         click.echo("Parallel mode enabled")
         click.echo("Number of processors: {}".format(mp.cpu_count()))
+        click.echo("Extracting features")
         pool = mp.Pool(CPU_COUNT)
+        prog_bar = tqdm(total=len(file_list))
 
         # Perform the feature calculation and return vector of features
-        result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor)) for file in
-                          file_list]
+        result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor),
+                                           callback=lambda _:prog_bar.update(1)) for file in file_list]
         # Unpack the worker results back into desired features
         features = [r.get() for r in result_objects]
         features = [i for i in features if i]
@@ -57,7 +60,8 @@ def extract(input_f, output_f, params, log, parallel):
         pool.join()
     else:
         features = list()
-        for file in file_list:
+        click.echo("Extracting features")
+        for file in tqdm(file_list):
             result = rf.extract_features(file, f_extractor, lgr)
             if result:
                 features.append(result)
