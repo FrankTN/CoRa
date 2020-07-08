@@ -50,7 +50,7 @@ def extract(input_f, output_f, params, log, parallel):
 
         # Perform the feature calculation and return vector of features
         result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor),
-                                           callback=lambda _:prog_bar.update(1)) for file in file_list]
+                                           callback=lambda _: prog_bar.update(1)) for file in file_list]
         # Unpack the worker results back into desired features
         features = [r.get() for r in result_objects]
         features = [i for i in features if i]
@@ -85,7 +85,7 @@ def test():
 @cora.command()
 @click.option('-o', '--output-f', default=INPUT_CSV, help='Cases target file')
 @click.option('-c', '--case-type', type=click.Choice(['medseg', 'mosmed', 'simple'], case_sensitive=False), help=
-              "define which dataset to prepare")
+"define which dataset to prepare")
 def cases(output_f, case_type):
     """ Creates a case file .csv based on the type of dataset being analyzed"""
     if case_type == 'medseg':
@@ -114,6 +114,12 @@ def sample(input_f):
     lgr = rf.setup_logger(LOG)
     file_list = ut.read_files(input_f, lgr)
     rf.sample_masks(file_list)
+
+
+@cora.command()
+def convert():
+    lgr = rf.setup_logger('log.txt')
+    ut.convert_nifti_to_png(ut.read_files(INPUT_CSV, lgr))
 
 
 def main():

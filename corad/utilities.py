@@ -1,4 +1,8 @@
 import csv
+import os
+
+import med2image
+
 
 
 def print_features(features_list) -> None:
@@ -90,3 +94,17 @@ def write_medseg(writer, target=10, sampled: bool = False):
 def write_simple(writer):
     """Writes the first 2 cases of the Italian dataset to the writer object."""
     write_medseg(writer, 2)
+
+
+def convert_nifti_to_png(file_list):
+    if all(file[0].endswith('.nii') and file[1].endswith('.nii') for file in file_list):
+        for file in file_list:
+            cmd = 'med2image -i ' + file[0] + ' -d ' + file[0].split('.')[0] + ' -t png'
+            os.system(cmd)
+            cmd = 'med2image -i ' + file[1] + ' -d ' + file[1].split('.')[0] + '_msk' + ' -t png'
+            os.system(cmd)
+
+    else:
+        print("Error, not all files in list are in nifti format")
+
+
