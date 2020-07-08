@@ -6,7 +6,7 @@ __pycache__
 cora.egg-info
 dist
 build
-corad/ild-cnn
+corad/ild_cnn
 corad/kerastest
 
 # File extensions

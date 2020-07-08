@@ -1,24 +1,31 @@
 import numpy as np
 from keras.utils import np_utils
 from keras_preprocessing.image import ImageDataGenerator
+import corad.ild_cnn.cnn_model as CNN
+import corad.ild_cnn.main
+import tensorflow as tf
 
-datagen = ImageDataGenerator(
-    featurewise_std_normalization=True,
-    featurewise_center=True
-)
-
-train_generator = datagen.flow_from_directory(directory='data/rp_im', color_mode='grey', target_size=(512, 512), class_mode='binary')
-validation_generator = datagen.flow_from_directory(directory='data/rp_im', color_mode='grey', target_size=(512, 512), class_mode='binary')
-
-model.fit_generator(
-    train_generator,
-    steps_per_epoch=2000,
-    epochs=50,
-    validation_data=validation_generator,
-    validation_steps=800)
+datagen = ImageDataGenerator()
 
 
+
+def run_cnn():
+    t_g, v_g = prepare_data_loaders()
+    batch_x, batch_y = t_g.next()
+    CNN.train(batch_x, batch_y, np.ones(len(batch_x)), np.ones(len(batch_y)), params=corad.ild_cnn.main.train_params)
+
+def prepare_data_loaders():
+    train_generator = datagen.flow_from_directory(directory='data/rp_im', color_mode='grayscale', target_size=(512, 512),
+                                                  class_mode='binary')
+    validation_generator = datagen.flow_from_directory(directory='data/rp_im', color_mode='grayscale',
+                                                       target_size=(512, 512), class_mode='binary')
+    return train_generator, validation_generator
+
+run_cnn()
+
+"""
 def prepare_file(file_path, mask_path):
+    
     # loading mnist dataset
     (X_train, y_train), (X_val, y_val) = mnist.load_data()
 
@@ -34,3 +41,4 @@ def prepare_file(file_path, mask_path):
     y_val = np_utils.to_categorical(y_val - zbn, nb_classes)
 
     return (X_train, y_train), (X_val, y_val)
+    """
