@@ -4,7 +4,6 @@ import os
 import med2image
 
 
-
 def print_features(features_list) -> None:
     """Prints the feature name and its value"""
     for features in features_list:
@@ -106,5 +105,3 @@ def convert_nifti_to_png(file_list):
 
     else:
         print("Error, not all files in list are in nifti format")
-
-
