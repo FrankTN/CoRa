@@ -29,11 +29,14 @@ def cora():
 @click.option('-p', '--params', default=PARAMS, help='Parameter file, default params.yaml')
 @click.option('-l', '--log', default=LOG, help='Log location, default log.txt')
 @click.option('-p', '--parallel', default=False, type=bool, is_flag=True, help='Parallelization flag')
-def run(input_f, output_f, params, log, parallel):
-    extract(input_f, output_f, params, log, parallel)
+@click.option('-b', '--label', default=1, type=int, help='The label to be used in the extraction, has to be valid for '
+                                                         'all masks being used. Note that any label defined in the '
+                                                         'input file takes precedence.')
+def run(input_f, output_f, params, log, parallel, label):
+    extract(input_f, output_f, params, log, parallel, label)
 
 
-def extract(input_f, output_f, params, log, parallel):
+def extract(input_f, output_f, params, log, parallel, label):
     # Write logs to logfile, set verbosity
     lgr = rf.setup_logger(log)
 
@@ -49,7 +52,8 @@ def extract(input_f, output_f, params, log, parallel):
         prog_bar = tqdm(total=len(file_list))
 
         # Perform the feature calculation and return vector of features
-        result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor),
+        # TODO no logger, cant pickle
+        result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor, label),
                                            callback=lambda _: prog_bar.update(1)) for file in file_list]
         # Unpack the worker results back into desired features
         features = [r.get() for r in result_objects]
@@ -62,7 +66,7 @@ def extract(input_f, output_f, params, log, parallel):
         features = list()
         click.echo("Extracting features")
         for file in tqdm(file_list):
-            result = rf.extract_features(file, f_extractor, lgr)
+            result = rf.extract_features(file, f_extractor, lgr, label)
             if result:
                 features.append(result)
 

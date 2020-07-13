@@ -76,7 +76,7 @@ def initialize_extractor(parameters: str, logger: radiomics.logger) -> featureex
 
 
 def extract_features(files: list, extractor: radiomics.featureextractor.RadiomicsFeatureExtractor,
-                     logger: radiomics.logger = None):
+                     logger: radiomics.logger = None, lab_val: int = 1):
     """
     Reads a tuple of file and mask, extracts features
     """
@@ -84,8 +84,8 @@ def extract_features(files: list, extractor: radiomics.featureextractor.Radiomic
     # print("Calculating features")
     # TODO Efficiently extract for all labels in mask
     # print(image, mask)
-    lab_val = None
     if label:
+        # Label defined in the input file takes precedence over the argument
         lab_val = int(label)
     result = None
     try:
