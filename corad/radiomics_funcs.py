@@ -81,11 +81,10 @@ def extract_features(files: list, extractor: radiomics.featureextractor.Radiomic
     Reads a tuple of file and mask, extracts features
     """
     image, mask, label = files
-    # print("Calculating features")
     # TODO Efficiently extract for all labels in mask
-    # print(image, mask)
     if label:
         # Label defined in the input file takes precedence over the argument
+        logger.info('Overriding manual label (-b) parameter, was ' + str(lab_val) + ', now ' + label)
         lab_val = int(label)
     result = None
     try:
@@ -94,6 +93,7 @@ def extract_features(files: list, extractor: radiomics.featureextractor.Radiomic
         if logger:
             logger.warning("Unable to extract features, error: {}".format(err))
         # print("Unable to extract features, error: {}".format(err))
+    logger.info('Extraction successful: \t' + image + '\t' + mask)
     return result
 
 

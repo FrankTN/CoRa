@@ -15,6 +15,7 @@ def read_files(file_path, logger):
     """ Reads a csv file containing pairs of scan names and masks, returns a list of masks """
     try:
         with open(file_path, newline='') as csvfile:
+            logger.info('Attempting to open: ' + file_path + ' to read as input')
             reader = csv.reader(csvfile, quotechar='|')
             # Skips the header in the file
             next(reader)
@@ -33,9 +34,11 @@ def read_files(file_path, logger):
 def store_features(features, file_names, out_path, logger):
     # Store the calculated features in a csv file in default pyradiomics batch output style
     if not features:
+        logger.warning('Can\'t store output, no features to store, continuing')
         return
     try:
         # Take the parameter names from the first feature vector
+        logger.info('Attempting to write file: ' + out_path)
         csv_columns = ['Image', 'Mask', *list(features[0].keys())]
         with open(out_path, 'w') as out_file:
             writer = csv.DictWriter(out_file, fieldnames=csv_columns)
