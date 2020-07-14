@@ -99,7 +99,7 @@ def extract_features(files: list, extractor: radiomics.featureextractor.Radiomic
     except ValueError as err:
         warning("Unable to extract features, error: {}".format(err))
         return None
-    info('Extraction successful: \t' + image + '\t' + mask)
+    # info('Extraction successful: \t' + image + '\t' + mask)
     return result
 
 
