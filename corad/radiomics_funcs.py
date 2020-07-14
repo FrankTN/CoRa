@@ -80,20 +80,26 @@ def extract_features(files: list, extractor: radiomics.featureextractor.Radiomic
     """
     Reads a tuple of file and mask, extracts features
     """
+
+    # Do this to handle parallel processing where we can't pass the logger
+    if not logger:
+        info = warning = print
+    else:
+        info = logger.info
+        warning = logger.warning
     image, mask, label = files
     # TODO Efficiently extract for all labels in mask
     if label:
         # Label defined in the input file takes precedence over the argument
-        logger.info('Overriding manual label (-b) parameter, was ' + str(lab_val) + ', now ' + label)
+        info('Overriding manual label (-b) parameter, was ' + str(lab_val) + ', now ' + label)
         lab_val = int(label)
     result = None
     try:
         result = extractor.execute(image, mask, label=lab_val)
     except ValueError as err:
-        if logger:
-            logger.warning("Unable to extract features, error: {}".format(err))
+        warning("Unable to extract features, error: {}".format(err))
         # print("Unable to extract features, error: {}".format(err))
-    logger.info('Extraction successful: \t' + image + '\t' + mask)
+    info('Extraction successful: \t' + image + '\t' + mask)
     return result
 
 
