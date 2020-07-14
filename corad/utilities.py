@@ -46,6 +46,7 @@ def store_features(features, file_names, out_path, logger):
                 writer.writerow(scan)
     except IOError:
         logger.error('Unable to write to output: {}'.format(out_file), exc_info=True)
+    logger.info('Done writing to file: ' + out_path)
 
 
 def create_input_names(out_path, case_type):
