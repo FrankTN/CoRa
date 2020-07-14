@@ -67,7 +67,8 @@ def initialize_extractor(parameters: str, logger: radiomics.logger) -> featureex
     # Initialize feature extractor, if inputfile is valid
     if os.path.isfile(parameters):
         extractor = radiomics.featureextractor.RadiomicsFeatureExtractor(parameters)
-    else:  # Parameter file not found, use hardcoded settings instead
+    else:
+        logger.warning('Parameter file not found, use hardcoded settings instead')
         settings = {'binWidth': 25, 'resampledPixelSpacing': None, 'interpolator': sitk.sitkBSpline,
                     'enableCExtensions': True}
         extractor = radiomics.featureextractor.RadiomicsFeatureExtractor(**settings)
@@ -93,12 +94,11 @@ def extract_features(files: list, extractor: radiomics.featureextractor.Radiomic
         # Label defined in the input file takes precedence over the argument
         info('Overriding manual label (-b) parameter, was ' + str(lab_val) + ', now ' + label)
         lab_val = int(label)
-    result = None
     try:
         result = extractor.execute(image, mask, label=lab_val)
     except ValueError as err:
         warning("Unable to extract features, error: {}".format(err))
-        # print("Unable to extract features, error: {}".format(err))
+        return None
     info('Extraction successful: \t' + image + '\t' + mask)
     return result
 
