@@ -76,7 +76,7 @@ def initialize_extractor(parameters: str, logger: radiomics.logger) -> featureex
 
 
 def extract_features(files: list, extractor: radiomics.featureextractor.RadiomicsFeatureExtractor,
-                     logger: radiomics.logger = None, lab_val: int = 1):
+                      lab_val: int = 1, logger: radiomics.logger = None):
     """
     Reads a tuple of file and mask, extracts features
     """
@@ -116,7 +116,7 @@ def sample_masks(file_list):
 
         # Hardcoded the levels right now, these correspond to the labels within the masks
         low = 1
-        high = 1
+        high = 2
         for lvl in np.arange(low, high + 1):
             tmp_mask = sitk.GetArrayFromImage(mask)
             tmp_mask[tmp_mask != lvl] = 0

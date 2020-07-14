@@ -66,7 +66,7 @@ def extract(input_f, output_f, params, log, parallel, label):
         features = list()
         click.echo("Extracting features")
         for file in tqdm(file_list):
-            result = rf.extract_features(file, f_extractor, lgr, label)
+            result = rf.extract_features(file, f_extractor, label, lgr)
             if result:
                 features.append(result)
 
@@ -122,6 +122,7 @@ def sample(input_f):
 
 @cora.command()
 def convert():
+    """ This command is used to prepare for CNN processing, by converting everything to png files."""
     lgr = rf.setup_logger('log.txt')
     ut.convert_nifti_to_png(ut.read_files(INPUT_CSV, lgr))
 
