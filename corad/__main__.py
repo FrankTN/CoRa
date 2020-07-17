@@ -89,15 +89,16 @@ def test():
 @cora.command()
 @click.option('-o', '--output-f', default=INPUT_CSV, help='Cases target file')
 @click.option('-c', '--case-type', type=click.Choice(['medseg', 'mosmed', 'simple'], case_sensitive=False), help=
-"define which dataset to prepare")
-def cases(output_f, case_type):
+"Define which dataset to prepare")
+@click.option('-s', '--sampled', is_Flag=True, help="If set will write subsampled cases")
+def cases(output_f, case_type, sampled):
     """ Creates a case file .csv based on the type of dataset being analyzed"""
     if case_type == 'medseg':
-        ut.create_input_names(output_f, ut.write_medseg)
+        ut.create_input_names(output_f, ut.write_medseg, sampled)
     elif case_type == 'simple':
         ut.create_input_names(output_f, ut.write_simple)
     elif case_type == 'mosmed':
-        ut.create_input_names(output_f, ut.write_mosmed)
+        ut.create_input_names(output_f, ut.write_mosmed, sampled)
 
 
 @cora.command()
