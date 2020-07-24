@@ -87,6 +87,16 @@ def test():
 
 
 @cora.command()
+def masks():
+    # pool = mp.Pool(CPU_COUNT)
+    dirs = [d for d in os.listdir('data/NDAT') if not d.endswith('.zip')]
+    [ut.create_masks('data/NDAT', vol) for vol in dirs]
+    # Cleanup after parallel work
+    # pool.close()
+    # pool.join()
+
+
+@cora.command()
 @click.option('-o', '--output-f', default=INPUT_CSV, help='Cases target file')
 @click.option('-c', '--case-type', type=click.Choice(['medseg', 'mosmed', 'simple'], case_sensitive=False), help=
 "Define which dataset to prepare")
