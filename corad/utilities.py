@@ -1,6 +1,7 @@
 import csv
 import os
 from lungmask import mask
+from pathlib import Path
 import SimpleITK as sitk
 
 
@@ -111,25 +112,25 @@ def convert_nifti_to_png(file_list):
     else:
         print("Error, not all files in list are in nifti format")
 
-def create_masks(parent, cur_dir):
-    cwd = os.getcwd()
-    target = os.path.join(cwd, parent, cur_dir, cur_dir)
-    volume_p = [d for d in os.listdir(target) if not d.endswith('.DS_Store')]
-    target = os.path.join(target, volume_p[0])
-    if not os.listdir(target)[0].endswith('.dcm'):
-        # We should go one layer deeper
-        volume_c = [d for d in os.listdir(target) if not d.endswith('.DS_Store')]
-        target = os.path.join(target, volume_c[0])
-    print(target)
-    try:
-        reader = sitk.ImageSeriesReader()
-        dicom_names = reader.GetGDCMSeriesFileNames(target)
-        #print(dicom_names)
-        reader.SetFileNames(dicom_names)
-        input_image = reader.Execute()
-        segmentation = mask.apply_fused(input_image)
-        result_out = sitk.GetImageFromArray(segmentation)
-        result_out.CopyInformation(input_image)
-        sitk.WriteImage(result_out, cur_dir + '.dcm')
-    except Exception as err:
-        print(err)
+def create_masks(target):
+
+    dcm_dirs = []
+    for root, dirs, files in os.walk(target):
+        if not dirs:
+            # Walk until we are in a leaf directory, which always contains dcm series
+            p = Path(root)
+            name = p.parts[11]
+            dcm_dirs.append((name, root))
+    for name, cur_dir in dcm_dirs:
+        try:
+            reader = sitk.ImageSeriesReader()
+            dicom_names = reader.GetGDCMSeriesFileNames(cur_dir)
+            #print(dicom_names)
+            reader.SetFileNames(dicom_names)
+            input_image = reader.Execute()
+            segmentation = mask.apply_fused(input_image)
+            result_out = sitk.GetImageFromArray(segmentation)
+            result_out.CopyInformation(input_image)
+            sitk.WriteImage(result_out, name + '.dcm')
+        except Exception as err:
+            print(err)

@@ -89,8 +89,8 @@ def test():
 @cora.command()
 def masks():
     # pool = mp.Pool(CPU_COUNT)
-    dirs = [d for d in os.listdir('data/NDAT') if not d.endswith('.zip')]
-    [ut.create_masks('data/NDAT', vol) for vol in dirs]
+    target = os.path.join(os.getcwd(), 'data/UMCG/DENOISED')
+    ut.create_masks(target)
     # Cleanup after parallel work
     # pool.close()
     # pool.join()
