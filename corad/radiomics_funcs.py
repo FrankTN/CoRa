@@ -76,7 +76,7 @@ def initialize_extractor(parameters: str, logger: radiomics.logger) -> featureex
     return extractor
 
 
-def extract_features(files: list, extractor: radiomics.featureextractor.RadiomicsFeatureExtractor,
+def extract_features(files: list, extractor: radiomics.featureextractor.RadiomicsFeatureExtractor, output_csv,
                       lab_val: int = 1, logger: radiomics.logger = None):
     """
     Reads a tuple of file and mask, extracts features
@@ -90,8 +90,6 @@ def extract_features(files: list, extractor: radiomics.featureextractor.Radiomic
         warning = logger.warning
 
     image, mask, label = files
-
-
     # TODO Efficiently extract for all labels in mask
     if label:
         # Label defined in the input file takes precedence over the argument
@@ -99,6 +97,8 @@ def extract_features(files: list, extractor: radiomics.featureextractor.Radiomic
         lab_val = int(label)
     try:
         result = extractor.execute(image, mask, label=lab_val)
+        # write to file
+
     except ValueError as err:
         warning("Unable to extract features, error: {}".format(err))
         return None

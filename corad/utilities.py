@@ -32,6 +32,30 @@ def read_files(file_path, logger):
     return path_list
 
 
+def store_row(img, msk, features, out_path, logger):
+    # Store the calculated features in a csv file in default pyradiomics batch output style
+    if not features:
+        logger.warning('Can\'t store output, no features to store, continuing')
+        return
+    try:
+        with open(out_path, 'a') as out_file:
+            csv_columns = ["Image", "Mask", *list(features.keys())]
+            writer = csv.DictWriter(out_file, fieldnames=csv_columns)
+            if os.path.getsize(os.path.join(os.getcwd(), out_path)) == 0:
+                # File is empty, we can write the header
+                writer.writeheader()
+            features['Image'] = img
+            features['Mask'] = msk
+            writer.writerow(features)
+            out_file.flush()
+            # scan['Image'] = file_name[0]
+            # scan['Mask'] = file_name[1]
+            # writer.writerow(scan)
+
+    except ValueError as err:
+        print(err)
+
+
 def store_features(features, file_names, out_path, logger):
     # Store the calculated features in a csv file in default pyradiomics batch output style
     if not features:
@@ -115,7 +139,7 @@ def write_UMCG(writer, sampled: bool = False):
                 mask_path = [m for m in os.listdir(mask_dir) if m.endswith(folder + '.dcm.nii')]
                 if mask_path:
                     pair['Mask'] = os.path.join(mask_dir, mask_path[0])
-                    #Write for the different labels
+                    # Write for the different labels
                     for i in range(1, 6):
                         pair['Label'] = i
                         writer.writerow(pair)

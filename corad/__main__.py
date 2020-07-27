@@ -67,11 +67,12 @@ def extract(input_f, output_f, params, log, parallel, label):
         click.echo("Extracting features")
         for file in tqdm(file_list):
             result = rf.extract_features(file, f_extractor, label, lgr)
+            ut.store_row(file[0], file[1], result, output_f, lgr)
             if result:
                 features.append(result)
 
     # Currently we print the results to the screen and we store them in results.csv
-    ut.store_features(features, file_list, output_f, lgr)
+    # ut.store_features(features, file_list, output_f, lgr)
 
 
 # @cora.command()
