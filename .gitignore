@@ -16,3 +16,4 @@ corad/kerastest
 *.txt
 *.png
 *.dcm
+*.lock

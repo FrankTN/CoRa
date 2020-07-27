@@ -53,7 +53,7 @@ def extract(input_f, output_f, params, log, parallel, label):
 
         # Perform the feature calculation and return vector of features
         # TODO no logger, cant pickle
-        result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor, label),
+        result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor, output_f, label),
                                            callback=lambda _: prog_bar.update(1)) for file in file_list]
         # Unpack the worker results back into desired features
         features = [r.get() for r in result_objects]
@@ -66,8 +66,7 @@ def extract(input_f, output_f, params, log, parallel, label):
         features = list()
         click.echo("Extracting features")
         for file in tqdm(file_list):
-            result = rf.extract_features(file, f_extractor, label, lgr)
-            ut.store_row(file[0], file[1], result, output_f, lgr)
+            result = rf.extract_features(file, f_extractor, output_f, label, lgr)
             if result:
                 features.append(result)
 

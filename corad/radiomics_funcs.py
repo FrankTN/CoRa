@@ -1,3 +1,4 @@
+import csv
 import logging
 import os
 
@@ -5,6 +6,7 @@ import SimpleITK as sitk
 import numpy as np
 import radiomics
 from radiomics import featureextractor, generalinfo
+from filelock import FileLock
 
 from scipy import ndimage
 from random import randint
@@ -102,8 +104,31 @@ def extract_features(files: list, extractor: radiomics.featureextractor.Radiomic
     except ValueError as err:
         warning("Unable to extract features, error: {}".format(err))
         return None
+
+    store_row(image, mask, result, output_csv, logger)
     # info('Extraction successful: \t' + image + '\t' + mask)
     return result
+
+
+def store_row(img, msk, features, out_path, logger):
+    # Store the calculated features in a csv file in default pyradiomics batch output style
+    if not features:
+        logger.warning('Can\'t store output, no features to store, continuing')
+        return
+    try:
+        with FileLock(out_path + '.lock'):
+            out_file = open(out_path, 'a')
+            csv_columns = ["Image", "Mask", *list(features.keys())]
+            writer = csv.DictWriter(out_file, fieldnames=csv_columns)
+            if os.path.getsize(os.path.join(os.getcwd(), out_path)) == 0:
+                # File is empty, we can write the header
+                writer.writeheader()
+            features['Image'] = img
+            features['Mask'] = msk
+            writer.writerow(features)
+            out_file.flush()
+    except ValueError as err:
+        print(err)
 
 
 def print_img_info(image: sitk.Image) -> None:
