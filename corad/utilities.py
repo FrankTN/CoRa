@@ -101,6 +101,26 @@ def write_simple(writer, _):
     write_medseg(writer, 2)
 
 
+def write_UMCG(writer, sampled: bool = False):
+    target = "data/UMCG/RAW"
+    mask_dir = os.path.join(target, 'Masks')
+    pair = {}
+    dirs = [f for f in os.listdir(target) if not f.endswith(".zip")]
+    dirs.remove("Masks")
+    for folder in dirs:
+        parent = os.path.join(target, folder)
+        for file in os.listdir(parent):
+            if file.endswith('.nii') or file.endswith('.gz'):
+                pair['Image'] = (os.path.join(parent, file))
+                mask_path = [m for m in os.listdir(mask_dir) if m.endswith(folder + '.dcm.nii')]
+                if mask_path:
+                    pair['Mask'] = os.path.join(mask_dir, mask_path[0])
+                    #Write for the different labels
+                    for i in range(1, 6):
+                        pair['Label'] = i
+                        writer.writerow(pair)
+
+
 def convert_nifti_to_png(file_list):
     if all(file[0].endswith('.nii') and file[1].endswith('.nii') for file in file_list):
         for file in file_list:
@@ -112,8 +132,8 @@ def convert_nifti_to_png(file_list):
     else:
         print("Error, not all files in list are in nifti format")
 
-def create_masks(target):
 
+def create_masks(target):
     dcm_dirs = []
     for root, dirs, files in os.walk(target):
         if not dirs:
@@ -125,7 +145,7 @@ def create_masks(target):
         try:
             reader = sitk.ImageSeriesReader()
             dicom_names = reader.GetGDCMSeriesFileNames(cur_dir)
-            #print(dicom_names)
+            # print(dicom_names)
             reader.SetFileNames(dicom_names)
             input_image = reader.Execute()
             segmentation = mask.apply_fused(input_image)

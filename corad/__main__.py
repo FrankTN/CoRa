@@ -88,17 +88,13 @@ def test():
 
 @cora.command()
 def masks():
-    # pool = mp.Pool(CPU_COUNT)
     target = os.path.join(os.getcwd(), 'data/UMCG/DENOISED')
     ut.create_masks(target)
-    # Cleanup after parallel work
-    # pool.close()
-    # pool.join()
 
 
 @cora.command()
 @click.option('-o', '--output-f', default=INPUT_CSV, help='Cases target file')
-@click.option('-c', '--case-type', type=click.Choice(['medseg', 'mosmed', 'simple'], case_sensitive=False), help=
+@click.option('-c', '--case-type', type=click.Choice(['medseg', 'mosmed', 'simple', 'UMCG'], case_sensitive=False), help=
 "Define which dataset to prepare")
 @click.option('-s', '--sampled', is_flag=True, help="If set will write subsampled cases")
 def cases(output_f, case_type, sampled):
@@ -109,6 +105,8 @@ def cases(output_f, case_type, sampled):
         ut.create_input_names(output_f, ut.write_simple)
     elif case_type == 'mosmed':
         ut.create_input_names(output_f, ut.write_mosmed, sampled)
+    elif case_type == 'UMCG':
+        ut.create_input_names(output_f, ut.write_UMCG, sampled)
 
 
 @cora.command()

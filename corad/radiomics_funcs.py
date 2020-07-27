@@ -88,7 +88,10 @@ def extract_features(files: list, extractor: radiomics.featureextractor.Radiomic
     else:
         info = logger.info
         warning = logger.warning
+
     image, mask, label = files
+
+
     # TODO Efficiently extract for all labels in mask
     if label:
         # Label defined in the input file takes precedence over the argument
