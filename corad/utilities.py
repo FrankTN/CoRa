@@ -104,7 +104,7 @@ def write_simple(writer, _):
 
 
 def write_UMCG(writer, sampled: bool = False):
-    target = "data/UMCG/RAW"
+    target = "data/UMCG/DENOISED"
     mask_dir = os.path.join(target, 'Masks')
     pair = {}
     dirs = [f for f in os.listdir(target) if not f.endswith(".zip")]

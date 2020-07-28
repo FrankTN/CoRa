@@ -31,3 +31,5 @@ setting:
     interpolator: sitkBSpline
     normalize: False
     removeOutliers:
+    geometryTolerance: 1e-3 # Very generous tolerance
+    correctMask: True
