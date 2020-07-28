@@ -32,8 +32,6 @@ def read_files(file_path, logger):
     return path_list
 
 
-
-
 def store_features(features, file_names, out_path, logger):
     # Store the calculated features in a csv file in default pyradiomics batch output style
     if not features:
@@ -103,8 +101,11 @@ def write_simple(writer, _):
     write_medseg(writer, 2)
 
 
-def write_UMCG(writer, sampled: bool = False):
-    target = "data/UMCG/DENOISED"
+def write_UMCG(writer, denoised: bool = False, sampled: bool = False):
+    if denoised:
+        target = "data/UMCG/DENOISED"
+    else:
+        target = "data/UMCG/RAW"
     mask_dir = os.path.join(target, 'Masks')
     pair = {}
     dirs = [f for f in os.listdir(target) if not f.endswith(".zip")]
@@ -121,6 +122,10 @@ def write_UMCG(writer, sampled: bool = False):
                     for i in range(1, 6):
                         pair['Label'] = i
                         writer.writerow(pair)
+
+
+def write_UMCG_D(writer, sampled):
+    write_UMCG(writer, True)
 
 
 def convert_nifti_to_png(file_list):

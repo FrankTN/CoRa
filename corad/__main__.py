@@ -94,7 +94,7 @@ def masks():
 
 @cora.command()
 @click.option('-o', '--output-f', default=INPUT_CSV, help='Cases target file')
-@click.option('-c', '--case-type', type=click.Choice(['medseg', 'mosmed', 'simple', 'UMCG'], case_sensitive=False), help=
+@click.option('-c', '--case-type', type=click.Choice(['medseg', 'mosmed', 'simple', 'UMCG_R', 'UMCG_D'], case_sensitive=False), help=
 "Define which dataset to prepare")
 @click.option('-s', '--sampled', is_flag=True, help="If set will write subsampled cases")
 def cases(output_f, case_type, sampled):
@@ -105,9 +105,10 @@ def cases(output_f, case_type, sampled):
         ut.create_input_names(output_f, ut.write_simple)
     elif case_type == 'mosmed':
         ut.create_input_names(output_f, ut.write_mosmed, sampled)
-    elif case_type == 'UMCG':
+    elif case_type == 'UMCG_R':
         ut.create_input_names(output_f, ut.write_UMCG, sampled)
-
+    elif case_type == 'UMCG_D':
+        ut.create_input_names(output_f, ut.write_UMCG_D, sampled)
 
 @cora.command()
 @click.confirmation_option(prompt='Are you sure you want to remove all .csv files?')
