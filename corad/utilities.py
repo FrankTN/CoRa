@@ -1,8 +1,13 @@
 import csv
 import os
+from lungmask import mask
+from pathlib import Path
+import SimpleITK as sitk
 
-import med2image
-
+'''
+    This file contains simple utility functions.
+    Frank te Nijenhuis 2020
+'''
 
 
 def print_features(features_list) -> None:
@@ -16,6 +21,7 @@ def read_files(file_path, logger):
     """ Reads a csv file containing pairs of scan names and masks, returns a list of masks """
     try:
         with open(file_path, newline='') as csvfile:
+            logger.info('Attempting to open: ' + file_path + ' to read as input')
             reader = csv.reader(csvfile, quotechar='|')
             # Skips the header in the file
             next(reader)
@@ -34,9 +40,11 @@ def read_files(file_path, logger):
 def store_features(features, file_names, out_path, logger):
     # Store the calculated features in a csv file in default pyradiomics batch output style
     if not features:
+        logger.warning('Can\'t store output, no features to store, continuing')
         return
     try:
         # Take the parameter names from the first feature vector
+        logger.info('Attempting to write file: ' + out_path)
         csv_columns = ['Image', 'Mask', *list(features[0].keys())]
         with open(out_path, 'w') as out_file:
             writer = csv.DictWriter(out_file, fieldnames=csv_columns)
@@ -47,18 +55,20 @@ def store_features(features, file_names, out_path, logger):
                 writer.writerow(scan)
     except IOError:
         logger.error('Unable to write to output: {}'.format(out_file), exc_info=True)
+        return
+    logger.info('Done writing to file: ' + out_path)
 
 
-def create_input_names(out_path, case_type):
+def create_input_names(out_path, case_type, sampled):
     """ Populates the input path csv at out_path, using hardcoded filenames"""
     csv_columns = ['Image', 'Mask', 'Label']
     with open(out_path, 'w') as out_file:
         writer = csv.DictWriter(out_file, fieldnames=csv_columns)
         writer.writeheader()
-        case_type(writer)
+        case_type(writer, sampled)
 
 
-def write_mosmed(writer, sampled: bool = True):
+def write_mosmed(writer, sampled: bool = False):
     """Writes the cases for the Moscow dataset to the writer object."""
     pair = {}
     for i in range(255, 305):
@@ -91,9 +101,44 @@ def write_medseg(writer, target=10, sampled: bool = False):
             writer.writerow(pair)
 
 
-def write_simple(writer):
+def write_simple(writer, _):
     """Writes the first 2 cases of the Italian dataset to the writer object."""
     write_medseg(writer, 2)
+
+
+def write_UMCG(writer, sampled: bool, denoised: bool = False):
+    if denoised:
+        target = "data/UMCG/DENOISED"
+    else:
+        target = "data/UMCG/RAW"
+    mask_dir = os.path.join(target, 'Masks')
+    pair = {}
+    dirs = [f for f in os.listdir(target) if not f.endswith(".zip")]
+    dirs.remove("Masks")
+    for folder in dirs:
+        parent = os.path.join(target, folder)
+        for file in os.listdir(parent):
+            if file.endswith('.nii') or file.endswith('.gz'):
+                pair['Image'] = (os.path.join(parent, file))
+                if not sampled:
+                    mask_path = [m for m in os.listdir(mask_dir) if m.endswith(folder + '.dcm.nii')]
+                    if mask_path:
+                        pair['Mask'] = os.path.join(mask_dir, mask_path[0])
+                        # Write for the different labels
+                        for i in range(1, 6):
+                            pair['Label'] = i
+                            writer.writerow(pair)
+                else:
+                    # sampled version
+                    for i in range(1, 6):
+                        mask_path = folder + ".dcm_sampled_" + str(i) + ".nii"
+                        pair['Mask'] = os.path.join(mask_dir, mask_path)
+                        pair['Label'] = i
+                        writer.writerow(pair)
+
+
+def write_UMCG_D(writer, sampled):
+    write_UMCG(writer, sampled, True)
 
 
 def convert_nifti_to_png(file_list):
@@ -108,3 +153,24 @@ def convert_nifti_to_png(file_list):
         print("Error, not all files in list are in nifti format")
 
 
+def create_masks(target):
+    dcm_dirs = []
+    for root, dirs, files in os.walk(target):
+        if not dirs:
+            # Walk until we are in a leaf directory, which always contains dcm series
+            p = Path(root)
+            name = p.parts[11]
+            dcm_dirs.append((name, root))
+    for name, cur_dir in dcm_dirs:
+        try:
+            reader = sitk.ImageSeriesReader()
+            dicom_names = reader.GetGDCMSeriesFileNames(cur_dir)
+            # print(dicom_names)
+            reader.SetFileNames(dicom_names)
+            input_image = reader.Execute()
+            segmentation = mask.apply_fused(input_image)
+            result_out = sitk.GetImageFromArray(segmentation)
+            result_out.CopyInformation(input_image)
+            sitk.WriteImage(result_out, name + '.dcm')
+        except Exception as err:
+            print(err)

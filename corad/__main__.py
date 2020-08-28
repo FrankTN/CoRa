@@ -6,6 +6,11 @@ from tqdm import tqdm
 import radiomics_funcs as rf
 import utilities as ut
 
+'''
+    This file defines the CLI functions using the Click library.
+    Frank te Nijenhuis 2020
+'''
+
 # Setup structured filepaths
 ROOT = os.getcwd()
 PARAMS = os.path.join(ROOT, 'params.yaml')
@@ -26,14 +31,17 @@ def cora():
 @click.option('-i', '--input-f', default=INPUT_CSV, help='Input file, containing list of files and corresponding '
                                                          'masks, a third label column is optional')
 @click.option('-o', '--output-f', default=OUTPUT_CSV, help='Output target file')
-@click.option('-p', '--params', default=PARAMS, help='Parameter file, default params.yaml')
+@click.option('-r', '--params', default=PARAMS, help='Parameter file, default params.yaml')
 @click.option('-l', '--log', default=LOG, help='Log location, default log.txt')
 @click.option('-p', '--parallel', default=False, type=bool, is_flag=True, help='Parallelization flag')
-def run(input_f, output_f, params, log, parallel):
-    extract(input_f, output_f, params, log, parallel)
+@click.option('-b', '--label', default=1, type=int, help='The label to be used in the extraction, has to be valid for '
+                                                         'all masks being used. Note that any label defined in the '
+                                                         'input file takes precedence.')
+def run(input_f, output_f, params, log, parallel, label):
+    extract(input_f, output_f, params, log, parallel, label)
 
 
-def extract(input_f, output_f, params, log, parallel):
+def extract(input_f, output_f, params, log, parallel, label):
     # Write logs to logfile, set verbosity
     lgr = rf.setup_logger(log)
 
@@ -49,7 +57,8 @@ def extract(input_f, output_f, params, log, parallel):
         prog_bar = tqdm(total=len(file_list))
 
         # Perform the feature calculation and return vector of features
-        result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor),
+        # TODO no logger, cant pickle
+        result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor, output_f, label),
                                            callback=lambda _: prog_bar.update(1)) for file in file_list]
         # Unpack the worker results back into desired features
         features = [r.get() for r in result_objects]
@@ -62,18 +71,13 @@ def extract(input_f, output_f, params, log, parallel):
         features = list()
         click.echo("Extracting features")
         for file in tqdm(file_list):
-            result = rf.extract_features(file, f_extractor, lgr)
+            result = rf.extract_features(file, f_extractor, output_f, label, lgr)
             if result:
                 features.append(result)
+    return features
 
     # Currently we print the results to the screen and we store them in results.csv
-    ut.store_features(features, file_list, output_f, lgr)
-
-
-# @cora.command()
-# @click.option('-p', '--set-pars', type=click.Choice(['simple', 'full'], case_sensitive=False))
-# def params(set_pars):
-#     click.echo(set_pars)
+    # ut.store_features(features, file_list, output_f, lgr)
 
 @cora.command()
 def test():
@@ -83,17 +87,29 @@ def test():
 
 
 @cora.command()
+def masks():
+    target = os.path.join(os.getcwd(), 'data/UMCG/RAW')
+    ut.create_masks(target)
+
+
+@cora.command()
 @click.option('-o', '--output-f', default=INPUT_CSV, help='Cases target file')
-@click.option('-c', '--case-type', type=click.Choice(['medseg', 'mosmed', 'simple'], case_sensitive=False), help=
-"define which dataset to prepare")
-def cases(output_f, case_type):
+@click.option('-c', '--case-type',
+              type=click.Choice(['medseg', 'mosmed', 'simple', 'UMCG_R', 'UMCG_D'], case_sensitive=False), help=
+              "Define which dataset to prepare")
+@click.option('-s', '--sampled', is_flag=True, help="If set will write subsampled cases")
+def cases(output_f, case_type, sampled):
     """ Creates a case file .csv based on the type of dataset being analyzed"""
     if case_type == 'medseg':
-        ut.create_input_names(output_f, ut.write_medseg)
+        ut.create_input_names(output_f, ut.write_medseg, sampled)
     elif case_type == 'simple':
         ut.create_input_names(output_f, ut.write_simple)
     elif case_type == 'mosmed':
-        ut.create_input_names(output_f, ut.write_mosmed)
+        ut.create_input_names(output_f, ut.write_mosmed, sampled)
+    elif case_type == 'UMCG_R':
+        ut.create_input_names(output_f, ut.write_UMCG, sampled)
+    elif case_type == 'UMCG_D':
+        ut.create_input_names(output_f, ut.write_UMCG_D, sampled)
 
 
 @cora.command()
@@ -118,6 +134,7 @@ def sample(input_f):
 
 @cora.command()
 def convert():
+    """ This command is used to prepare for CNN processing, by converting everything to png files."""
     lgr = rf.setup_logger('log.txt')
     ut.convert_nifti_to_png(ut.read_files(INPUT_CSV, lgr))
 

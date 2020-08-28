@@ -1,21 +1,29 @@
+import csv
 import logging
 import os
 
 import SimpleITK as sitk
 import numpy as np
 import radiomics
-from radiomics import featureextractor, generalinfo
+from radiomics import featureextractor
+from filelock import FileLock
 
 from scipy import ndimage
 from random import randint
 
+'''
+    This file contains functions which interact with the Pyradiomics library.
+    Frank te Nijenhuis 2020
+'''
+
+# These constants are used by the logger to switch verbosity levels.
 HI_VERBOSITY = 10
 LO_VERBOSITY = 40
 
 
 def setup_logger(log_path):
     radiomics.setVerbosity(LO_VERBOSITY)
-    # get pyradiomics logger, loglevel DEBUG
+    # Get pyradiomics logger, loglevel DEBUG
     logger = radiomics.logger
     logger.setLevel(logging.DEBUG)
 
@@ -67,7 +75,8 @@ def initialize_extractor(parameters: str, logger: radiomics.logger) -> featureex
     # Initialize feature extractor, if inputfile is valid
     if os.path.isfile(parameters):
         extractor = radiomics.featureextractor.RadiomicsFeatureExtractor(parameters)
-    else:  # Parameter file not found, use hardcoded settings instead
+    else:
+        logger.warning('Parameter file not found, use hardcoded settings instead')
         settings = {'binWidth': 25, 'resampledPixelSpacing': None, 'interpolator': sitk.sitkBSpline,
                     'enableCExtensions': True}
         extractor = radiomics.featureextractor.RadiomicsFeatureExtractor(**settings)
@@ -75,39 +84,57 @@ def initialize_extractor(parameters: str, logger: radiomics.logger) -> featureex
     return extractor
 
 
-def extract_features(files: list, extractor: radiomics.featureextractor.RadiomicsFeatureExtractor,
-                     logger: radiomics.logger = None):
+def extract_features(files: list, extractor: radiomics.featureextractor.RadiomicsFeatureExtractor, output_csv,
+                      lab_val: int = 1, logger: radiomics.logger = None):
     """
     Reads a tuple of file and mask, extracts features
     """
+
+    # Do this to handle parallel processing where we can't pass the logger
+    if not logger:
+        info = warning = print
+    else:
+        info = logger.info
+        warning = logger.warning
+
     image, mask, label = files
-    # print("Calculating features")
     # TODO Efficiently extract for all labels in mask
-    # print(image, mask)
-    lab_val = None
     if label:
+        # Label defined in the input file takes precedence over the argument
+        info('Overriding manual label (-b) parameter, was ' + str(lab_val) + ', now ' + label)
         lab_val = int(label)
-    result = None
     try:
         result = extractor.execute(image, mask, label=lab_val)
+        # write to file
+
     except ValueError as err:
-        if logger:
-            logger.warning("Unable to extract features, error: {}".format(err))
-        # print("Unable to extract features, error: {}".format(err))
+        warning("Unable to extract features, error: {}".format(err))
+        return None
+
+    store_row(image, mask, result, output_csv, logger)
+    # info('Extraction successful: \t' + image + '\t' + mask)
     return result
 
 
-def print_img_info(image: sitk.Image) -> None:
-    print("Pixel Type    {}".format(image.GetPixelID()))
-    print("Size          {}".format(image.GetSize()))
-    print("Origin        {}".format(image.GetOrigin()))
-    print("Spacing       {}".format(image.GetSpacing()))
-    print("Direction     {}".format(image.GetDirection()))
-
-
-def print_gen_info() -> None:
-    info = generalinfo.GeneralInfo()
-    print(info.getGeneralInfo())
+def store_row(img, msk, features, out_path, logger):
+    # Store the calculated features in a csv file in default pyradiomics batch output style
+    if not features:
+        logger.warning('Can\'t store output, no features to store, continuing')
+        return
+    try:
+        with FileLock(out_path + '.lock'):
+            out_file = open(out_path, 'a')
+            csv_columns = ["Image", "Mask", *list(features.keys())]
+            writer = csv.DictWriter(out_file, fieldnames=csv_columns)
+            if os.path.getsize(os.path.join(os.getcwd(), out_path)) == 0:
+                # File is empty, we can write the header
+                writer.writeheader()
+            features['Image'] = img
+            features['Mask'] = msk
+            writer.writerow(features)
+            out_file.flush()
+    except ValueError as err:
+        print(err)
 
 
 def sample_masks(file_list):
@@ -116,7 +143,7 @@ def sample_masks(file_list):
 
         # Hardcoded the levels right now, these correspond to the labels within the masks
         low = 1
-        high = 1
+        high = 5
         for lvl in np.arange(low, high + 1):
             tmp_mask = sitk.GetArrayFromImage(mask)
             tmp_mask[tmp_mask != lvl] = 0
