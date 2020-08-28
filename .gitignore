@@ -18,5 +18,5 @@ corad/kerastest
 *.dcm
 *.lock
 *.xlsx
-!/merge_script.py
-!/visuals.py
+merge_script.py
+visuals.py

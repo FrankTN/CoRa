@@ -6,6 +6,11 @@ from tqdm import tqdm
 import radiomics_funcs as rf
 import utilities as ut
 
+'''
+    This file defines the CLI functions using the Click library.
+    Frank te Nijenhuis 2020
+'''
+
 # Setup structured filepaths
 ROOT = os.getcwd()
 PARAMS = os.path.join(ROOT, 'params.yaml')
@@ -73,12 +78,6 @@ def extract(input_f, output_f, params, log, parallel, label):
 
     # Currently we print the results to the screen and we store them in results.csv
     # ut.store_features(features, file_list, output_f, lgr)
-
-
-# @cora.command()
-# @click.option('-p', '--set-pars', type=click.Choice(['simple', 'full'], case_sensitive=False))
-# def params(set_pars):
-#     click.echo(set_pars)
 
 @cora.command()
 def test():

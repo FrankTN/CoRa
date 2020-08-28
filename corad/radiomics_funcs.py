@@ -5,19 +5,25 @@ import os
 import SimpleITK as sitk
 import numpy as np
 import radiomics
-from radiomics import featureextractor, generalinfo
+from radiomics import featureextractor
 from filelock import FileLock
 
 from scipy import ndimage
 from random import randint
 
+'''
+    This file contains functions which interact with the Pyradiomics library.
+    Frank te Nijenhuis 2020
+'''
+
+# These constants are used by the logger to switch verbosity levels.
 HI_VERBOSITY = 10
 LO_VERBOSITY = 40
 
 
 def setup_logger(log_path):
     radiomics.setVerbosity(LO_VERBOSITY)
-    # get pyradiomics logger, loglevel DEBUG
+    # Get pyradiomics logger, loglevel DEBUG
     logger = radiomics.logger
     logger.setLevel(logging.DEBUG)
 
@@ -129,19 +135,6 @@ def store_row(img, msk, features, out_path, logger):
             out_file.flush()
     except ValueError as err:
         print(err)
-
-
-def print_img_info(image: sitk.Image) -> None:
-    print("Pixel Type    {}".format(image.GetPixelID()))
-    print("Size          {}".format(image.GetSize()))
-    print("Origin        {}".format(image.GetOrigin()))
-    print("Spacing       {}".format(image.GetSpacing()))
-    print("Direction     {}".format(image.GetDirection()))
-
-
-def print_gen_info() -> None:
-    info = generalinfo.GeneralInfo()
-    print(info.getGeneralInfo())
 
 
 def sample_masks(file_list):

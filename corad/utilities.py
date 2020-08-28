@@ -4,6 +4,11 @@ from lungmask import mask
 from pathlib import Path
 import SimpleITK as sitk
 
+'''
+    This file contains simple utility functions.
+    Frank te Nijenhuis 2020
+'''
+
 
 def print_features(features_list) -> None:
     """Prints the feature name and its value"""
