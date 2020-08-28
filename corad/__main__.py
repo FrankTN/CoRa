@@ -26,7 +26,7 @@ def cora():
 @click.option('-i', '--input-f', default=INPUT_CSV, help='Input file, containing list of files and corresponding '
                                                          'masks, a third label column is optional')
 @click.option('-o', '--output-f', default=OUTPUT_CSV, help='Output target file')
-@click.option('-p', '--params', default=PARAMS, help='Parameter file, default params.yaml')
+@click.option('-r', '--params', default=PARAMS, help='Parameter file, default params.yaml')
 @click.option('-l', '--log', default=LOG, help='Log location, default log.txt')
 @click.option('-p', '--parallel', default=False, type=bool, is_flag=True, help='Parallelization flag')
 @click.option('-b', '--label', default=1, type=int, help='The label to be used in the extraction, has to be valid for '
@@ -69,6 +69,7 @@ def extract(input_f, output_f, params, log, parallel, label):
             result = rf.extract_features(file, f_extractor, output_f, label, lgr)
             if result:
                 features.append(result)
+    return features
 
     # Currently we print the results to the screen and we store them in results.csv
     # ut.store_features(features, file_list, output_f, lgr)
@@ -88,14 +89,15 @@ def test():
 
 @cora.command()
 def masks():
-    target = os.path.join(os.getcwd(), 'data/UMCG/DENOISED')
+    target = os.path.join(os.getcwd(), 'data/UMCG/RAW')
     ut.create_masks(target)
 
 
 @cora.command()
 @click.option('-o', '--output-f', default=INPUT_CSV, help='Cases target file')
-@click.option('-c', '--case-type', type=click.Choice(['medseg', 'mosmed', 'simple', 'UMCG_R', 'UMCG_D'], case_sensitive=False), help=
-"Define which dataset to prepare")
+@click.option('-c', '--case-type',
+              type=click.Choice(['medseg', 'mosmed', 'simple', 'UMCG_R', 'UMCG_D'], case_sensitive=False), help=
+              "Define which dataset to prepare")
 @click.option('-s', '--sampled', is_flag=True, help="If set will write subsampled cases")
 def cases(output_f, case_type, sampled):
     """ Creates a case file .csv based on the type of dataset being analyzed"""
@@ -109,6 +111,7 @@ def cases(output_f, case_type, sampled):
         ut.create_input_names(output_f, ut.write_UMCG, sampled)
     elif case_type == 'UMCG_D':
         ut.create_input_names(output_f, ut.write_UMCG_D, sampled)
+
 
 @cora.command()
 @click.confirmation_option(prompt='Are you sure you want to remove all .csv files?')

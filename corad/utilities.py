@@ -101,7 +101,7 @@ def write_simple(writer, _):
     write_medseg(writer, 2)
 
 
-def write_UMCG(writer, denoised: bool = False, sampled: bool = False):
+def write_UMCG(writer, sampled: bool, denoised: bool = False):
     if denoised:
         target = "data/UMCG/DENOISED"
     else:
@@ -115,17 +115,25 @@ def write_UMCG(writer, denoised: bool = False, sampled: bool = False):
         for file in os.listdir(parent):
             if file.endswith('.nii') or file.endswith('.gz'):
                 pair['Image'] = (os.path.join(parent, file))
-                mask_path = [m for m in os.listdir(mask_dir) if m.endswith(folder + '.dcm.nii')]
-                if mask_path:
-                    pair['Mask'] = os.path.join(mask_dir, mask_path[0])
-                    # Write for the different labels
+                if not sampled:
+                    mask_path = [m for m in os.listdir(mask_dir) if m.endswith(folder + '.dcm.nii')]
+                    if mask_path:
+                        pair['Mask'] = os.path.join(mask_dir, mask_path[0])
+                        # Write for the different labels
+                        for i in range(1, 6):
+                            pair['Label'] = i
+                            writer.writerow(pair)
+                else:
+                    # sampled version
                     for i in range(1, 6):
+                        mask_path = folder + ".dcm_sampled_" + str(i) + ".nii"
+                        pair['Mask'] = os.path.join(mask_dir, mask_path)
                         pair['Label'] = i
                         writer.writerow(pair)
 
 
 def write_UMCG_D(writer, sampled):
-    write_UMCG(writer, True)
+    write_UMCG(writer, sampled, True)
 
 
 def convert_nifti_to_png(file_list):

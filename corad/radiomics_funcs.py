@@ -150,7 +150,7 @@ def sample_masks(file_list):
 
         # Hardcoded the levels right now, these correspond to the labels within the masks
         low = 1
-        high = 2
+        high = 5
         for lvl in np.arange(low, high + 1):
             tmp_mask = sitk.GetArrayFromImage(mask)
             tmp_mask[tmp_mask != lvl] = 0
