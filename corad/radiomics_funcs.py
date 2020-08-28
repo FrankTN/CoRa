@@ -25,7 +25,7 @@ def setup_logger(log_path):
     radiomics.setVerbosity(LO_VERBOSITY)
     # Get pyradiomics logger, loglevel DEBUG
     logger = radiomics.logger
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.ERROR)
 
     # Set up the handler to write out all log entries to a file
     handler = logging.FileHandler(filename=log_path, mode='w')

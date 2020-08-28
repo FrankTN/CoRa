@@ -3,8 +3,8 @@ import multiprocessing as mp
 import click
 from tqdm import tqdm
 
-import radiomics_funcs as rf
-import utilities as ut
+import corad.radiomics_funcs as rf
+import corad.utilities as ut
 
 '''
     This file defines the CLI functions using the Click library.
@@ -57,7 +57,6 @@ def extract(input_f, output_f, params, log, parallel, label):
         prog_bar = tqdm(total=len(file_list))
 
         # Perform the feature calculation and return vector of features
-        # TODO no logger, cant pickle
         result_objects = [pool.apply_async(rf.extract_features, args=(file, f_extractor, output_f, label),
                                            callback=lambda _: prog_bar.update(1)) for file in file_list]
         # Unpack the worker results back into desired features
@@ -76,14 +75,13 @@ def extract(input_f, output_f, params, log, parallel, label):
                 features.append(result)
     return features
 
-    # Currently we print the results to the screen and we store them in results.csv
-    # ut.store_features(features, file_list, output_f, lgr)
 
 @cora.command()
 def test():
     """ Runs a test case using simple parameters"""
-    ut.create_input_names(INPUT_CSV, ut.write_simple)
-    extract(INPUT_CSV, OUTPUT_CSV, PARAMS, LOG, False)
+    ut.create_input_names(INPUT_CSV, ut.write_simple, False)
+    temp_label = 1
+    extract(INPUT_CSV, OUTPUT_CSV, PARAMS, LOG, False, temp_label)
 
 
 @cora.command()
